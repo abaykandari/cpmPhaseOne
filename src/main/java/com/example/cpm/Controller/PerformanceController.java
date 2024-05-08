@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.cpm.Entity.Performance;
@@ -41,6 +42,12 @@ public class PerformanceController {
     @DeleteMapping("/deletePerformance")
     public ResponseEntity<String> deletePerformance(@RequestBody Performance performance){
         performanceService.deletePerformance(performance);
+        return new ResponseEntity<>("OK", HttpStatus.OK);
+    }
+
+    @DeleteMapping("/deletePerformanceById")
+    public ResponseEntity<String> deletePerformance(@RequestParam int talentId){
+        performanceService.deletePerformance(talentId);
         return new ResponseEntity<>("OK", HttpStatus.OK);
     }
 }
