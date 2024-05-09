@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 import com.example.cpm.Entity.Regularize;
 
 @Repository
-public interface RegularizeRepository extends JpaRepository<Regularize, Long> {
+public interface RegularizeRepository extends JpaRepository<Regularize, Integer> {
 }
