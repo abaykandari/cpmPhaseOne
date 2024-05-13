@@ -23,11 +23,11 @@ public class CollegeTPO {
     @Column
     private String phoneNumber;
     @Column
-    private  String addressLine1;
+    private String addressLine1;
     @Column
     private String addressLine2;
     @Column
-    private  String location;
+    private String location;
     @Column
     private String region;
     @Column
@@ -39,7 +39,7 @@ public class CollegeTPO {
     @Column
     private String tier;
     @Column
-    private  String pinCode;
+    private String pinCode;
     @Column
     private String state;
     @Column

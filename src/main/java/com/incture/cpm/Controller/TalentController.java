@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.incture.cpm.Entity.Candidate;
 import com.incture.cpm.Entity.Talent;
+import com.incture.cpm.Service.PerformanceService;
 import com.incture.cpm.Service.TalentService;
 
 @RestController
@@ -26,6 +27,9 @@ public class TalentController {
 
     @Autowired
     private TalentService talentService;
+
+    @Autowired
+    private PerformanceService performanceService;
 
     @PostMapping("/createtalent")
     public ResponseEntity<Talent> createTalent(@RequestBody Talent talent) {
@@ -50,7 +54,8 @@ public class TalentController {
 
     @GetMapping("/gettalentbyid/{talentId}")
     public ResponseEntity<Talent> getTalentById(@PathVariable Long talentId) {
-        Talent talent = talentService.getTalentById(talentId);
+        Talent talent = talentService.getTalentById(talentId); 
+        
         if (talent != null) {
             return new ResponseEntity<>(talent, HttpStatus.OK);
         }
@@ -60,9 +65,12 @@ public class TalentController {
     @PutMapping("/updatetalent/{talentId}")
     public ResponseEntity<Talent> updateTalent(@RequestBody Talent talent, @PathVariable Long talentId) {
         Talent updatedTalent = talentService.updateTalent(talent, talentId);
+        
         if (updatedTalent != null) {
+            performanceService.editTalentDetails(talent); // edit details in performance too (but not in attendance)
             return new ResponseEntity<>(updatedTalent, HttpStatus.OK);
         }
+
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 

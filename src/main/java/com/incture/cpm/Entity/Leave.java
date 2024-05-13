@@ -1,5 +1,4 @@
 package com.incture.cpm.Entity;
-/* package com.example.cpm.Entity;
 
 import java.util.Date;
 
@@ -28,25 +27,14 @@ public class Leave {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int leaveId;
 
+    private int talentId;
+    private String talentName;
     private String approvalStatus;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date date;
-    
-    @Temporal(TemporalType.DATE)
-    private Date startDate;
-
-    private int averageManagerFeedback;
-
+    private String date;
+    private String startDate;
+    private String endDate;
     private String approverName;
 
-    @ManyToOne
-    @JoinColumn(name = "talentId", nullable = false)
-    private Talent talent;
-
-    @PrePersist
-    protected void onCreate() {
-        this.date = new Date();
-    }
+    private String subject;
+    private String description;
 }
- */

@@ -36,6 +36,16 @@ public class PerformanceService {
         return "Performance saved successfully";
     }
 
+    public String editTalentDetails(Talent talent){
+        Performance existingPerformance = performanceRepo.findById(talent.getTalentId()).orElseThrow(() -> new IllegalStateException("Performance not found for given talent"));
+
+        existingPerformance.setTalentName(talent.getTalentName());
+        existingPerformance.setEkYear(talent.getEkYear());
+        existingPerformance.setTalentSkills(talent.getTalentSkills());
+        performanceRepo.save(existingPerformance);
+        return "Performance updated successfully";
+    }
+
     public void updateFeedback(Performance performance) {
         Performance existingPerformance = performanceRepo.findById(performance.getTalentId()).orElseThrow(() -> new IllegalStateException("Performance not found for given id"));
 

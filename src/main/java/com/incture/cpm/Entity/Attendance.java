@@ -20,6 +20,7 @@ public class Attendance {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long attendanceId;
 
+    private Long talentId;
     private String talentName;
     private String talentCategory;
     private String officeLocation;
@@ -30,5 +31,5 @@ public class Attendance {
     private String checkin;
     private String checkout;
 
-    private Long talentId;
+    public String totalHours;
 }

@@ -25,11 +25,13 @@ public class AttendanceController {
     @Autowired
     AttendanceService attendanceService;
 
+    // used to get all attendance list
     @GetMapping("/getAllAttendance")
     public List<Attendance> getAllAttendance(){
         return attendanceService.getAllAttendance();
     }
 
+    // used in daily view
     @GetMapping("/getAttendanceByDate")
     public ResponseEntity<Optional<List<Attendance>>> getAttendanceByDate(@RequestParam("date") String date){
         Optional<List<Attendance>> attendanceList =  attendanceService.getAttendanceByDate(date);
@@ -41,18 +43,21 @@ public class AttendanceController {
         }
     }
 
+    // used temporarily for adding attendance
     @PostMapping("/addAttendance")
     public ResponseEntity<String> addAttendance(@RequestBody Attendance attendance){
         String message = attendanceService.addAttendance(attendance);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
+    // used temporarily for adding attendance list
     @PostMapping("/addAttendanceByList")
     public ResponseEntity<String> addAttendanceByList(@RequestBody List<Attendance> attendance){
         String message = attendanceService.addAttendanceByList(attendance);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
+    // used in weekly and monthly view
     @GetMapping("/getAttendanceByDateRangeAndTalent")
     public ResponseEntity<Optional<List<Attendance>>> getAttendanceByDateRangeAndTalent(@RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate, @RequestParam("talentId") Long talentId){
         Optional<List<Attendance>> attendanceList = attendanceService.getAttendanceByDateRangeAndTalent(startDate, endDate, talentId);
@@ -62,5 +67,12 @@ public class AttendanceController {
         } else {
             return ResponseEntity.noContent().build();
         }
+    }
+
+    // used temporarily for calculating and saving totalHours field 
+    @PutMapping("/saveHours")
+    public ResponseEntity<String> saveHours(){
+        String message = attendanceService.saveHours();
+        return new ResponseEntity<>(message, HttpStatus.OK);
     }
 }
