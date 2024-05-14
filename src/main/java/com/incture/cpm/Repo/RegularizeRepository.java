@@ -10,6 +10,5 @@ import com.incture.cpm.Entity.Regularize;
 
 @Repository
 public interface RegularizeRepository extends JpaRepository<Regularize, Long> {
-
     List<Regularize> findByApprovalStatus(String string);
 }

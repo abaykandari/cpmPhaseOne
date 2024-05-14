@@ -35,7 +35,7 @@ public class PerformanceService {
         performanceRepo.save(performance);
         return "Performance saved successfully";
     }
-    
+
     public String editTalentDetails(Talent talent){
         Performance existingPerformance = performanceRepo.findById(talent.getTalentId()).orElseThrow(() -> new IllegalStateException("Performance not found for given talent"));
 

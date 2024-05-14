@@ -29,12 +29,15 @@ public class RegularizeController {
         return new ResponseEntity<>(employees, HttpStatus.OK);
     }
 
+<<<<<<< HEAD
     @GetMapping("/getAllPending")
     public ResponseEntity<List<Regularize>> getAllPendingRegularization() {
         List<Regularize> employees = regularizeService.getAllPendingRegularization();
         return new ResponseEntity<>(employees, HttpStatus.OK);
     }
 
+=======
+>>>>>>> siddhi
     @GetMapping("/getById/{id}")
     public ResponseEntity<Regularize> getRegularizeById(@PathVariable("id") Long id) {
         Optional<Regularize> employee = regularizeService.getRegularizeById(id);
