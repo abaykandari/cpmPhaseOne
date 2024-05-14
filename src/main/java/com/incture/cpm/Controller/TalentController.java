@@ -40,6 +40,7 @@ public class TalentController {
     @PostMapping("/addtalentfromcandidate")
     public ResponseEntity<Talent> addTalentFromCandidate(@RequestBody Candidate candidate) {
         Talent newtalent = talentService.addTalentFromCandidate(candidate);
+        
         if (newtalent == null) {
             return new ResponseEntity<>(newtalent, HttpStatus.BAD_REQUEST);
         }

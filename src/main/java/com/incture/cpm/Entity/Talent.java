@@ -49,5 +49,6 @@ public class Talent {
     private String talentCategory;//inperson / online
     private double cgpaUndergrad;
     private double cgpaMasters;
+    private String officeLocation;
 
 }

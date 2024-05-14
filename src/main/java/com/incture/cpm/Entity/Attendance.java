@@ -1,9 +1,15 @@
 package com.incture.cpm.Entity;
 
+import java.time.Duration;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,4 +38,25 @@ public class Attendance {
     private String checkout;
 
     public String totalHours;
+
+    @PrePersist
+    @PreUpdate
+    private void updateTotalHours() {
+        calculateTotalHours();
+    }
+
+    private void calculateTotalHours() {
+        if (checkin == null || checkout == null) {
+            totalHours = "00:00";
+            return;
+        }
+        LocalTime checkinTime = LocalTime.parse(checkin, DateTimeFormatter.ofPattern("HH:mm:ss"));
+        LocalTime checkoutTime = LocalTime.parse(checkout, DateTimeFormatter.ofPattern("HH:mm:ss"));
+
+        Duration duration = Duration.between(checkinTime, checkoutTime);
+        long hours = duration.toHours();
+        long minutes = (duration.toMinutes() % 60); 
+    
+        totalHours = String.format("%02d:%02d", hours, minutes);
+    }
 }

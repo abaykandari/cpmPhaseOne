@@ -24,6 +24,10 @@ public class RegularizeService {
         return regularizeRepository.findAll();
     }
 
+    public List<Regularize> getAllPendingRegularization() {
+        return regularizeRepository.findByApprovalStatus("Pending");
+    }
+    
     public Optional<Regularize> getRegularizeById(Long regularizeId) {
         return regularizeRepository.findById(regularizeId);
     }
@@ -32,6 +36,7 @@ public class RegularizeService {
         Attendance attendance = attendanceRepo.findById(regularize.getTalentId()).orElseThrow(() -> new IllegalStateException("Talent not found for the given talentId"));
 
         regularize.setTalentName(attendance.getTalentName());
+        regularize.setApprovalStatus("Pending");
         regularizeRepository.save(regularize);
         return "saved";
     }
@@ -44,6 +49,14 @@ public class RegularizeService {
         return "deleted";
     }
 
+    public String declineRegularize(Long id) {
+        Regularize regularize = regularizeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Regularization not found for given regularizationId"));
+        regularize.setApprovalStatus("Declined");
+        regularizeRepository.save(regularize);
+
+        return "Regularization successfully declined"; 
+    } 
+    
     public String createRegularizeList(List<Regularize> regularizeList) {
         for (Regularize regularize : regularizeList) {
             try {
@@ -53,5 +66,5 @@ public class RegularizeService {
             }
         }
         return "All regularizations saved successfully";
-    } 
+    }
 }

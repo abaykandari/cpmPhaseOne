@@ -29,6 +29,12 @@ public class RegularizeController {
         return new ResponseEntity<>(employees, HttpStatus.OK);
     }
 
+    @GetMapping("/getAllPending")
+    public ResponseEntity<List<Regularize>> getAllPendingRegularization() {
+        List<Regularize> employees = regularizeService.getAllPendingRegularization();
+        return new ResponseEntity<>(employees, HttpStatus.OK);
+    }
+
     @GetMapping("/getById/{id}")
     public ResponseEntity<Regularize> getRegularizeById(@PathVariable("id") Long id) {
         Optional<Regularize> employee = regularizeService.getRegularizeById(id);
@@ -48,9 +54,15 @@ public class RegularizeController {
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
-    @PutMapping("/updateRegularize/{id}")
-    public ResponseEntity<String> updateRegularize(@PathVariable("id") Long id) {
-        String message = attendanceService.updateRegularize(id);
+    @PutMapping("/approveRegularize/{id}")
+    public ResponseEntity<String> approveRegularize(@PathVariable("id") Long id) {
+        String message = attendanceService.approveRegularize(id);
+        return new ResponseEntity<>(message, HttpStatus.OK);
+    }
+
+    @PutMapping("/declineRegularize/{id}")
+    public ResponseEntity<String> declineRegularize(@PathVariable("id") Long id) {
+        String message = regularizeService.declineRegularize(id);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 

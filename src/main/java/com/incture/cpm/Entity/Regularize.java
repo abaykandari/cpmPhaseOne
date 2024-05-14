@@ -20,8 +20,8 @@ public class Regularize {
     private String checkin;
     private String checkout;
     private String approvalManager;
+    private String approvalStatus;
     private String attendanceDate;
     private String regularizeDate;
     private Long talentId;
 }
-

@@ -68,11 +68,4 @@ public class AttendanceController {
             return ResponseEntity.noContent().build();
         }
     }
-
-    // used temporarily for calculating and saving totalHours field 
-    @PutMapping("/saveHours")
-    public ResponseEntity<String> saveHours(){
-        String message = attendanceService.saveHours();
-        return new ResponseEntity<>(message, HttpStatus.OK);
-    }
 }
