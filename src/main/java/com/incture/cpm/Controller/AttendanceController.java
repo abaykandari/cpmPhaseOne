@@ -69,18 +69,8 @@ public class AttendanceController {
         }
     }
 
-    // used temporarily for calculating and saving totalHours field 
-    @PutMapping("/saveHours")
-    public ResponseEntity<String> saveHours(){
-        String message = attendanceService.saveHours();
-        return new ResponseEntity<>(message, HttpStatus.OK);
-    }
-
     //give filtered attendace data w.r.t to the reporting manager
     @GetMapping("/getAllAttendanceWRTrm")
-    // public List<Attendance> getAllAttendanceRM(){
-    //     return attendanceService.getAllAttendanceRM();
-    // }
     public ResponseEntity<Optional<List<Attendance>>> getAttendanceByDateRM(@RequestParam("date") String date,
                                                                             @RequestParam("rm") String reportingManager){
         Optional<List<Attendance>> attendanceList =  attendanceService.getAllAttendanceRM(date, reportingManager);
