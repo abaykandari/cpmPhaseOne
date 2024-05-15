@@ -22,18 +22,29 @@ public class PerformanceService {
         return performanceRepo.findAll();
     }
 
-    public String addPerformance(Performance performance) {
+    //to be removed latern on
+    public String updatePerformance(Performance performance) {
         Talent existingTalent = talentRepository.findById(performance.getTalentId()).orElseThrow(() -> new IllegalArgumentException("Talent not found"));
         
-        Optional<Performance> existingPerformance = performanceRepo.findById(performance.getTalentId());
-        if (existingPerformance.isPresent()) 
-            throw new IllegalArgumentException("Performance with this ID already exists");
+        Performance existingPerformance = performanceRepo.findById(performance.getTalentId()).orElseThrow(() -> new IllegalArgumentException("Performance not found"));
 
         performance.setTalentName(existingTalent.getTalentName());
         performance.setEkYear(existingTalent.getEkYear());
         performance.setTalentSkills(existingTalent.getTalentSkills());
         performanceRepo.save(performance);
-        return "Performance saved successfully";
+        return "Performance created successfully";
+    }
+
+    public String addPerformanceWithTalent(Talent talent){
+        Performance performance = new Performance();
+
+        performance.setTalentId(talent.getTalentId());
+        performance.setTalentName(talent.getTalentName());
+        performance.setEkYear(talent.getEkYear());
+        performance.setTalentSkills(talent.getTalentSkills());
+        performanceRepo.save(performance);
+
+        return "Performance created successfully";
     }
 
     public String editTalentDetails(Talent talent){
@@ -79,7 +90,7 @@ public class PerformanceService {
     public String addPerformanceByList(List<Performance> performanceList) {
         for (Performance performance : performanceList) {
             try {
-                addPerformance(performance);
+                updatePerformance(performance);
             } catch (IllegalArgumentException e) {
                 return "Error adding performance: " + e.getMessage();
             }

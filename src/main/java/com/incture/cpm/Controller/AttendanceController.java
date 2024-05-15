@@ -71,8 +71,7 @@ public class AttendanceController {
 
     //give filtered attendace data w.r.t to the reporting manager
     @GetMapping("/getAllAttendanceWRTrm")
-    public ResponseEntity<Optional<List<Attendance>>> getAttendanceByDateRM(@RequestParam("date") String date,
-                                                                            @RequestParam("rm") String reportingManager){
+    public ResponseEntity<Optional<List<Attendance>>> getAttendanceByDateRM(@RequestParam("date") String date, @RequestParam("rm") String reportingManager){
         Optional<List<Attendance>> attendanceList =  attendanceService.getAllAttendanceRM(date, reportingManager);
         
         if (attendanceList.isPresent()) {

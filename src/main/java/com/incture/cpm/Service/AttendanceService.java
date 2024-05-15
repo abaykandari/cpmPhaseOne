@@ -1,9 +1,5 @@
 package com.incture.cpm.Service;
 
-import java.time.LocalDate;
-import java.time.Duration;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -104,23 +100,13 @@ public class AttendanceService {
     //gives filtered attendance data w.r.t to RM
     public Optional<List<Attendance>> getAllAttendanceRM(String date, String reportingManager) {
         List<Talent> talentList = talentRepo.findByReportingManager(reportingManager);
-        List<Long> talentIds = new ArrayList<>();
-        for (Talent talent : talentList) {
-            talentIds.add(talent.getTalentId());
-        }
         List<Attendance> attendanceList = new ArrayList<>();
-        for (Long talentId : talentIds) {
-            Attendance attendance = attendanceRepo.findById(talentId)
-                .orElseThrow(() -> new RuntimeException("Attendance not found for talentId: " + talentId));
+        
+        for (Talent talent : talentList) {
+            Attendance attendance = attendanceRepo.findByDateAndTalentId(date, talent.getTalentId()).orElseThrow(() -> new RuntimeException("Attendance not found for talentId: " + talent.getTalentId()));
             attendanceList.add(attendance);
         }
-        List<Attendance> ans = new ArrayList<>();
-        for(Attendance attendance : attendanceList){
-            if(attendance.getDate().equals(date)){
-                ans.add(attendance);
-            }
-        }
-        return Optional.of(ans);
+        
+        return Optional.ofNullable(attendanceList);
     }
-    
 }

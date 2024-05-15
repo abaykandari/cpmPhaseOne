@@ -31,8 +31,9 @@ public class Attendance {
     private String talentCategory;
     private String officeLocation;
     private String ekYear;
-    private String status;
-    
+    private String status; // Present, Absent, On Leave, Holiday
+    //private String holidayName;
+
     private String date;
     private String checkin;
     private String checkout;

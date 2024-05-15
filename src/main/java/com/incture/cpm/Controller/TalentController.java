@@ -34,6 +34,7 @@ public class TalentController {
     @PostMapping("/createtalent")
     public ResponseEntity<Talent> createTalent(@RequestBody Talent talent) {
         Talent createdTalent = talentService.createTalent(talent);
+        performanceService.addPerformanceWithTalent(createdTalent);
         return new ResponseEntity<>(createdTalent, HttpStatus.CREATED);
     }
 
@@ -41,10 +42,9 @@ public class TalentController {
     public ResponseEntity<Talent> addTalentFromCandidate(@RequestBody Candidate candidate) {
         Talent newtalent = talentService.addTalentFromCandidate(candidate);
         
-        if (newtalent == null) {
-            return new ResponseEntity<>(newtalent, HttpStatus.BAD_REQUEST);
-        }
-        return new ResponseEntity<>(newtalent, HttpStatus.CREATED);
+        if (newtalent == null)  return new ResponseEntity<>(newtalent, HttpStatus.BAD_REQUEST);
+        if(performanceService.addPerformanceWithTalent(newtalent) == "Performance saved successfully") return new ResponseEntity<>(newtalent, HttpStatus.CREATED);
+        else return new ResponseEntity<>(newtalent, HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("/alltalent")
@@ -78,6 +78,7 @@ public class TalentController {
     @DeleteMapping("/deletetalent/{talentId}")
     public ResponseEntity<Void> deleteTalent(@PathVariable Long talentId) {
         talentService.deleteTalent(talentId);
+        performanceService.deletePerformance(talentId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

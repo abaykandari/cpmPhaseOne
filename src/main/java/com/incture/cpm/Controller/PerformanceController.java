@@ -29,9 +29,9 @@ public class PerformanceController {
         return performanceService.getAllPerformances();
     }
 
-    @PostMapping("/addPerformance")
-    public ResponseEntity<String> addPerformance(@RequestBody Performance performance) {
-        String message=performanceService.addPerformance(performance);
+    @PostMapping("/updatePerformance")
+    public ResponseEntity<String> updatePerformance(@RequestBody Performance performance) {
+        String message=performanceService.updatePerformance(performance);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 

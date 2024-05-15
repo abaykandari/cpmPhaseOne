@@ -15,6 +15,8 @@ public interface AttendanceRepo extends JpaRepository<Attendance, Long>{
     Optional<Attendance> findByTalentIdAndDate(Long talentId, String date);
     Optional<List<Attendance>> findByDate(String date);
 
+    Optional<Attendance> findByDateAndTalentId(String date, Long talentId);
+
     @Query("SELECT a FROM Attendance a WHERE a.date BETWEEN :startDate AND :endDate AND a.talentId = :talentId")
     Optional<List<Attendance>> findByDateRangeAndTalent(
             @Param("startDate") String startDate,
