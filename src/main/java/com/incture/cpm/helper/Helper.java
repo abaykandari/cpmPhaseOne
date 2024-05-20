@@ -1,5 +1,5 @@
 package com.incture.cpm.helper;
-
+ 
 import com.incture.cpm.Entity.Candidate;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -7,162 +7,135 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.web.multipart.MultipartFile;
-
+ 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Iterator;
 import java.util.List;
-
+ 
 public class Helper {
-
-
-    //check that file is of excel type or not
+ 
+    // check that file is of excel type or not
     public static boolean checkExcelFormat(MultipartFile file) {
-
+ 
         String contentType = file.getContentType();
-
+ 
         if (contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
             return true;
         } else {
             return false;
         }
-
+ 
     }
-
-
-    //convert excel to list of products
-
+ 
+    // convert excel to list of products
+ 
     @SuppressWarnings("deprecation")
     public static List<Candidate> convertExcelToListOfProduct(InputStream is) {
-        List<Candidate> list = new ArrayList<>();
-
+                List<Candidate> list = new ArrayList<>();
+        Set<String> uniqueEmails = new HashSet<>();
+ 
         try {
-
-
             XSSFWorkbook workbook = new XSSFWorkbook(is);
-
             XSSFSheet sheet = workbook.getSheet("Sheet1");
-
-            int rowNumber = 0;
+ 
             Iterator<Row> iterator = sheet.iterator();
-
+ 
             while (iterator.hasNext()) {
                 Row row = iterator.next();
-
-                if (rowNumber == 0) {
-                    rowNumber++;
+ 
+                // Skip header row
+                if (row.getRowNum() == 0)
                     continue;
-                }
-
-                Iterator<Cell> cells = row.iterator();
-
-                int cid = 0;
-                // long ct=1;
-                Candidate p = new Candidate();
-
+ 
+                Iterator<Cell> cells = row.cellIterator();
+                Candidate candidate = new Candidate();
+ 
                 while (cells.hasNext()) {
                     Cell cell = cells.next();
-                    p.setStatus("Interview Pending");
-                    switch (cid) {
+                    int columnIndex = cell.getColumnIndex();
+ 
+                    // Set candidate fields based on cell index
+                    switch (columnIndex) {
                         case 0:
-                            p.setCandidateId((long) cell.getNumericCellValue());
-                            System.out.println(cell.getCellType());
+                            candidate.setCandidateId((long) cell.getNumericCellValue());
                             break;
                         case 1:
-                            p.setCandidateName(cell.getStringCellValue());
-                            System.out.println(cell.getCellType());
+                            candidate.setCandidateName(cell.getStringCellValue());
                             break;
                         case 2:
-                            p.setCandidateCollege(cell.getStringCellValue());
-                            System.out.println(cell.getCellType());
+                            candidate.setCandidateCollege(cell.getStringCellValue());
                             break;
                         case 3:
-                        p.setDepartment(cell.getStringCellValue());
-                            System.out.println(cell.getCellType());
+                            candidate.setDepartment(cell.getStringCellValue());
                             break;
-                            case 4:
-                            p.setEmail(cell.getStringCellValue());
-                            System.out.println(cell.getCellType());
+                        case 4:
+                            candidate.setEmail(cell.getStringCellValue());
                             break;
-                            case 5:
-                            p.setPhoneNumber(Integer.toString((int)cell.getNumericCellValue()));
-                            
-                            System.out.println(cell.getCellType());
+                        case 5:
+                            candidate.setPhoneNumber(String.valueOf((long) cell.getNumericCellValue()));
                             break;
-                            case 6:
-                            p.setAlternateNumber(Integer.toString((int)cell.getNumericCellValue()));
-                            
-                            System.out.println(cell.getCellType());
+                        case 6:
+                            candidate.setAlternateNumber(String.valueOf((long) cell.getNumericCellValue()));
                             break;
-                            case 7:
-                            p.setTenthPercent((double)cell.getNumericCellValue());
-                            System.out.println(cell.getCellType());
+                        case 7:
+                            candidate.setTenthPercent(cell.getNumericCellValue());
                             break;
-                            case 8:
-                            p.setTwelthPercent((double)cell.getNumericCellValue());
-                            System.out.println(cell.getCellType());
+                        case 8:
+                            candidate.setTwelthPercent(cell.getNumericCellValue());
                             break;
-                            case 9:
-                            p.setMarksheetsSemwise(cell.getStringCellValue());
-                            System.out.println(cell.getCellType());
+                        case 9:
+                            candidate.setMarksheetsSemwise(cell.getStringCellValue());
                             break;
-                            case 10:
-                            p.setCurrentLocation(cell.getStringCellValue());
-                            System.out.println(cell.getCellType());
+                        case 10:
+                            candidate.setCurrentLocation(cell.getStringCellValue());
                             break;
-                            case 11:
-                            p.setPermanentAddress(cell.getStringCellValue());
-                            System.out.println(cell.getCellType());
+                        case 11:
+                            candidate.setPermanentAddress(cell.getStringCellValue());
                             break;
-
-                            case 12:
-                            p.setPanNumber(cell.getStringCellValue());
-                            System.out.println(cell.getCellType());
+                        case 12:
+                            candidate.setPanNumber(cell.getStringCellValue());
                             break;
-                            case 13:
-                            p.setAadhaarNumber(String.valueOf(cell.getNumericCellValue()));
-                            System.out.println(cell.getCellType());
+                        case 13:
+                            candidate.setAadhaarNumber(cell.getStringCellValue());
                             break;
-                            case 14:
-                            p.setFatherName(cell.getStringCellValue());
-                            System.out.println(cell.getCellType());
+                        case 14:
+                            candidate.setFatherName(cell.getStringCellValue());
                             break;
-                            case 15:
-                            p.setMotherName(cell.getStringCellValue());
-                            System.out.println(cell.getCellType());
+                        case 15:
+                            candidate.setMotherName(cell.getStringCellValue());
                             break;
-                            case 16:
-                            p.setDOB(cell.getStringCellValue());
-                            System.out.println(cell.getCellType());
+                        case 16:
+                            candidate.setDOB(cell.getStringCellValue());
                             break;
-                            case 17:
-                            p.setCgpaUndergrad((double)cell.getNumericCellValue());
-                            System.out.println(cell.getCellType());
+                        case 17:
+                            candidate.setCgpaUndergrad(cell.getNumericCellValue());
                             break;
-                            case 18:
-                            p.setCgpaMasters((double)cell.getNumericCellValue());
-                            System.out.println(cell.getCellType());
+                        case 18:
+                            candidate.setCgpaMasters(cell.getNumericCellValue());
                             break;
-                            
                         default:
                             break;
                     }
-                    cid++;
-
                 }
-
-                list.add(p);
-
-
+ 
+                // Add candidate to the list only if the email is unique
+                if (uniqueEmails.add(candidate.getEmail())) {
+                    candidate.setStatus("Interview Pending");
+                    list.add(candidate);
+                }
             }
-
-
-        } catch (Exception e) {
+ 
+            workbook.close(); // Close workbook to release resources
+        } catch (IOException e) {
             e.printStackTrace();
         }
+ 
         return list;
-
+ 
     }
-
-
+ 
 }

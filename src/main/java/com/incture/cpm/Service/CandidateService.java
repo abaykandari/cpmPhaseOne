@@ -12,12 +12,9 @@ import java.io.IOException;
 import java.util.List;
 
 @Service
-
 public class CandidateService {
-
     @Autowired
     private CandidateRepository candidateRepository;
-
 
     public List<Candidate> getAllCandidates() {
         return candidateRepository.findAll();
