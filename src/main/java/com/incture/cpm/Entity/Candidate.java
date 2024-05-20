@@ -30,7 +30,7 @@ public class Candidate {
     private String alternateNumber;
     private double tenthPercent;
     private double twelthPercent;
-    // private String marksheetsSemwise;
+    private String marksheetsSemwise;
     private String currentLocation;
     private String permanentAddress;
     private String panNumber;
