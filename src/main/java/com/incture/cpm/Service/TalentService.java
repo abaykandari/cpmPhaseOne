@@ -60,14 +60,17 @@ public class TalentService {
         if (existingTalent != null) {
            talent.setTalentId(talentId);
            talent.setCandidateId(existingTalent.getCandidateId());
-        //    talent.setTenthPercent(existingTalent.getTenthPercent());
-        //    talent.setTwelthPercent(existingTalent.getTwelthPercent());
             return  talentRepository.save(talent);
         }
         return null;
     }
 
-    public void deleteTalent(Long talentId) {
-        talentRepository.deleteById(talentId);
+    public boolean deleteTalent(Long talentId) {
+        Talent existingTalent= talentRepository.findById(talentId).orElse(null);
+        if(existingTalent!=null){
+            talentRepository.deleteById(talentId);
+            return true;
+        }
+        return false;
     }
 }

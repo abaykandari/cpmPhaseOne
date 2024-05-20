@@ -1,5 +1,10 @@
 package com.incture.cpm.Entity;
 
+import java.sql.Blob;
+
+
+// import java.sql.Date;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,9 +35,8 @@ public class Talent {
     // private String interviewId;
     private double tenthPercent;
     private double twelthPercent;
-
-    // @Column(nullable = false)
-    // private byte[] marksheetsSemwise;
+    
+    private Blob marksheetsSemwise;
 
     private String currentLocation;
     private String permanentAddress;
@@ -50,5 +54,4 @@ public class Talent {
     private double cgpaUndergrad;
     private double cgpaMasters;
     private String officeLocation;
-
 }

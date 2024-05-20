@@ -1,6 +1,12 @@
 package com.incture.cpm.Controller;
 
+import java.io.IOException;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.List;
+
+import javax.sql.rowset.serial.SerialBlob;
+import javax.sql.rowset.serial.SerialException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,26 +19,36 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+// import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.incture.cpm.Entity.Candidate;
 import com.incture.cpm.Entity.Talent;
-import com.incture.cpm.Service.PerformanceService;
 import com.incture.cpm.Service.TalentService;
+// import com.fasterxml.jackson.databind.ObjectMapper;
+import com.incture.cpm.Service.PerformanceService;
 
-@RestController
+
 @CrossOrigin("*")
+@RestController
 @RequestMapping("/cpm/talents")
 public class TalentController {
 
     @Autowired
-    private TalentService talentService;
-
-    @Autowired
     private PerformanceService performanceService;
 
+    @Autowired
+    private TalentService talentService;
+
     @PostMapping("/createtalent")
-    public ResponseEntity<Talent> createTalent(@RequestBody Talent talent) {
+    public ResponseEntity<Talent> createTalent(@RequestPart Talent talent, @RequestPart MultipartFile marksheetsSemwise) throws IOException, SerialException, SQLException {
+        
+        // ObjectMapper objectMapper = new ObjectMapper();
+        // Talent talent=objectMapper.readValue(talentJsonData, Talent.class);
+        Blob marksheetPdf = new SerialBlob(marksheetsSemwise.getBytes());
+        talent.setMarksheetsSemwise(marksheetPdf);
         Talent createdTalent = talentService.createTalent(talent);
         performanceService.addPerformanceWithTalent(createdTalent);
         return new ResponseEntity<>(createdTalent, HttpStatus.CREATED);
@@ -41,10 +57,12 @@ public class TalentController {
     @PostMapping("/addtalentfromcandidate")
     public ResponseEntity<Talent> addTalentFromCandidate(@RequestBody Candidate candidate) {
         Talent newtalent = talentService.addTalentFromCandidate(candidate);
-        
-        if (newtalent == null)  return new ResponseEntity<>(newtalent, HttpStatus.BAD_REQUEST);
-        if(performanceService.addPerformanceWithTalent(newtalent) == "Performance saved successfully") return new ResponseEntity<>(newtalent, HttpStatus.CREATED);
-        else return new ResponseEntity<>(newtalent, HttpStatus.BAD_REQUEST);
+        if (newtalent == null) {
+            return new ResponseEntity<>(newtalent, HttpStatus.BAD_REQUEST);
+        }
+        if (performanceService.addPerformanceWithTalent(newtalent) == "Performance saved successfully")
+            return new ResponseEntity<>(newtalent, HttpStatus.CREATED);
+        return new ResponseEntity<>(newtalent, HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("/alltalent")
@@ -55,8 +73,7 @@ public class TalentController {
 
     @GetMapping("/gettalentbyid/{talentId}")
     public ResponseEntity<Talent> getTalentById(@PathVariable Long talentId) {
-        Talent talent = talentService.getTalentById(talentId); 
-        
+        Talent talent = talentService.getTalentById(talentId);
         if (talent != null) {
             return new ResponseEntity<>(talent, HttpStatus.OK);
         }
@@ -64,21 +81,25 @@ public class TalentController {
     }
 
     @PutMapping("/updatetalent/{talentId}")
-    public ResponseEntity<Talent> updateTalent(@RequestBody Talent talent, @PathVariable Long talentId) {
+    public ResponseEntity<Talent> updateTalent(@RequestPart Talent talent,@RequestPart MultipartFile marksheetsSemwise, @PathVariable Long talentId) throws SerialException, SQLException, IOException {
+        Blob marksheetPdf = new SerialBlob(marksheetsSemwise.getBytes());
+        talent.setMarksheetsSemwise(marksheetPdf);
         Talent updatedTalent = talentService.updateTalent(talent, talentId);
         
         if (updatedTalent != null) {
-            performanceService.editTalentDetails(talent); // edit details in performance too (but not in attendance)
+            performanceService.editTalentDetails(talent);
             return new ResponseEntity<>(updatedTalent, HttpStatus.OK);
         }
-
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @DeleteMapping("/deletetalent/{talentId}")
     public ResponseEntity<Void> deleteTalent(@PathVariable Long talentId) {
-        talentService.deleteTalent(talentId);
-        performanceService.deletePerformance(talentId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        boolean check=talentService.deleteTalent(talentId);
+        if(check){
+            performanceService.deletePerformance(talentId);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }
