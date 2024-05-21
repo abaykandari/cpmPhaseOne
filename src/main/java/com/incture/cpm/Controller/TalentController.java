@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-// import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,7 +29,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.incture.cpm.Entity.Candidate;
 import com.incture.cpm.Entity.Talent;
 import com.incture.cpm.Service.TalentService;
-// import com.fasterxml.jackson.databind.ObjectMapper;
 import com.incture.cpm.Service.PerformanceService;
 
 
@@ -46,15 +44,23 @@ public class TalentController {
     private TalentService talentService;
 
     @PostMapping("/createtalent")
-    public ResponseEntity<Talent> createTalent(@RequestPart Talent talent, @RequestPart MultipartFile marksheetsSemwise) throws IOException, SerialException, SQLException {
-        
-        // ObjectMapper objectMapper = new ObjectMapper();
-        // Talent talent=objectMapper.readValue(talentJsonData, Talent.class);
-        Blob marksheetPdf = new SerialBlob(marksheetsSemwise.getBytes());
-        talent.setMarksheetsSemwise(marksheetPdf);
+    public ResponseEntity<Talent> createTalent(@RequestBody Talent talent) {
         Talent createdTalent = talentService.createTalent(talent);
         performanceService.addPerformanceWithTalent(createdTalent);
         return new ResponseEntity<>(createdTalent, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/uploadmarksheet/{talentId}")
+    public ResponseEntity<Talent> uploadMarksheets(@RequestPart MultipartFile marksheetsSemwise, @PathVariable Long talentId) throws SerialException, SQLException, IOException{
+        Blob marksheetPdf = new SerialBlob(marksheetsSemwise.getBytes());
+        Talent talent= talentService.getTalentById(talentId);
+        talent.setMarksheetsSemwise(marksheetPdf);
+        Talent updatedTalent = talentService.updateTalent(talent, talentId);
+        if (updatedTalent != null) {
+            performanceService.editTalentDetails(talent);
+            return new ResponseEntity<>(updatedTalent, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PostMapping("/addtalentfromcandidate")
@@ -84,9 +90,7 @@ public class TalentController {
     }
 
     @PutMapping("/updatetalent/{talentId}")
-    public ResponseEntity<Talent> updateTalent(@RequestPart Talent talent,@RequestPart MultipartFile marksheetsSemwise, @PathVariable Long talentId) throws SerialException, SQLException, IOException {
-        Blob marksheetPdf = new SerialBlob(marksheetsSemwise.getBytes());
-        talent.setMarksheetsSemwise(marksheetPdf);
+    public ResponseEntity<Talent> updateTalent(@RequestPart Talent talent, @PathVariable Long talentId){
         Talent updatedTalent = talentService.updateTalent(talent, talentId);
         
         if (updatedTalent != null) {
@@ -108,7 +112,7 @@ public class TalentController {
 
 
 
-    @GetMapping("/talent/{talentId}/marksheet")
+    @GetMapping("/viewmarksheet/{talentId}")
     public ResponseEntity<byte[]> getMarksheet(@PathVariable Long talentId) throws IOException {
         // Retrieve Talent object from the service layer
         Talent talent = talentService.getTalentById(talentId);
