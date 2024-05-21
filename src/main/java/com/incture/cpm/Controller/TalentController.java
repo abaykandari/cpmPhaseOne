@@ -9,7 +9,10 @@ import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -102,4 +105,34 @@ public class TalentController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
+
+
+    @GetMapping("/talent/{talentId}/marksheet")
+    public ResponseEntity<byte[]> getMarksheet(@PathVariable Long talentId) throws IOException {
+        // Retrieve Talent object from the service layer
+        Talent talent = talentService.getTalentById(talentId);
+
+        if (talent != null && talent.getMarksheetsSemwise() != null) {
+            try {
+                // Retrieve the PDF data from the Talent object
+                Blob marksheetBlob = talent.getMarksheetsSemwise();
+                byte[] pdfData = marksheetBlob.getBytes(1, (int) marksheetBlob.length());
+
+                // Set appropriate response headers for PDF content
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_PDF);
+                headers.setContentDisposition(ContentDisposition.builder("inline").filename("marksheet.pdf").build());
+
+                return new ResponseEntity<>(pdfData, headers, HttpStatus.OK);
+            } catch (SQLException e) {
+                // Handle exceptions appropriately
+                e.printStackTrace();
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
 }
