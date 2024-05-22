@@ -90,7 +90,7 @@ public class TalentController {
     }
 
     @PutMapping("/updatetalent/{talentId}")
-    public ResponseEntity<Talent> updateTalent(@RequestPart Talent talent, @PathVariable Long talentId){
+    public ResponseEntity<Talent> updateTalent(@RequestBody Talent talent, @PathVariable Long talentId){
         Talent updatedTalent = talentService.updateTalent(talent, talentId);
         
         if (updatedTalent != null) {
