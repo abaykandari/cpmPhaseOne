@@ -3,8 +3,6 @@ package com.incture.cpm.Entity;
 import java.sql.Blob;
 
 
-// import java.sql.Date;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -54,4 +52,5 @@ public class Talent {
     private double cgpaUndergrad;
     private double cgpaMasters;
     private String officeLocation;
+
 }
