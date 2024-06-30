@@ -1,8 +1,8 @@
 package com.incture.cpm.Controller;
 
-import com.incture.cpm.Entity.Assessment;
+import com.incture.cpm.Entity.TalentAssessment;
 import com.incture.cpm.Entity.Talent;
-import com.incture.cpm.Service.AssessmentService;
+import com.incture.cpm.Service.TalentAssessmentService;
 import com.incture.cpm.helper.Helper;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +17,15 @@ import java.util.Map;
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/assessments")
-public class AssessmentController {
+public class TalentAssessmentController {
 
     @Autowired
-    private AssessmentService assessmentService;
+    private TalentAssessmentService assessmentService;
+    @GetMapping("/assementwiseview")
+    public ResponseEntity<List<TalentAssessment>> getUniqueAssessments() {
+        List<TalentAssessment> uniqueAssessments = assessmentService.getUniqueAssessments();
+        return ResponseEntity.ok(uniqueAssessments);
+    }
 
     @GetMapping("/getalltalents")
     public ResponseEntity<List<Talent>> getAllTalentsForAssessment() {
@@ -29,14 +34,14 @@ public class AssessmentController {
     }
 
     @PostMapping("/addassessment")
-    public ResponseEntity<String> addAssessment(@RequestBody Assessment assessment) {
+    public ResponseEntity<String> addAssessment(@RequestBody TalentAssessment assessment) {
         String response = assessmentService.addAssessment(assessment);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/viewassessment/{talentId}")
-    public ResponseEntity<List<Assessment>> viewAssessmentsForTalent(@PathVariable Long talentId) {
-        List<Assessment> assessments = assessmentService.viewAssessmentsForTalent(talentId);
+    public ResponseEntity<List<TalentAssessment>> viewAssessmentsForTalent(@PathVariable Long talentId) {
+        List<TalentAssessment> assessments = assessmentService.viewAssessmentsForTalent(talentId);
         if (assessments != null) {
             return ResponseEntity.ok(assessments);
         } else {
@@ -45,9 +50,9 @@ public class AssessmentController {
     }
 
     @PutMapping("/updateassessment/{assessmentId}/{talentId}")
-    public ResponseEntity<Assessment> updateAssessment(@PathVariable Long assessmentId, @PathVariable Long talentId,
-            @RequestBody Assessment updatedAssessment) {
-        Assessment assessment = assessmentService.updateAssessment(assessmentId, talentId, updatedAssessment);
+    public ResponseEntity<TalentAssessment> updateAssessment(@PathVariable Long assessmentId, @PathVariable Long talentId,
+            @RequestBody TalentAssessment updatedAssessment) {
+        TalentAssessment assessment = assessmentService.updateAssessment(assessmentId, talentId, updatedAssessment);
         if (assessment != null) {
             return ResponseEntity.ok(assessment);
         } else {
@@ -70,10 +75,19 @@ public class AssessmentController {
     @PostMapping("/uploadexcel")
     public ResponseEntity<?> uploadExcelFile(@RequestPart MultipartFile file){
         if(Helper.checkExcelFormat(file)){
-            this.assessmentService.save(file);
+           String message= this.assessmentService.save(file);
 
-            return ResponseEntity.ok(Map.of("message", "File is uploaded and data is saved to Database"));
+            return ResponseEntity.ok(Map.of("message", message));
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please upload excel file ");
     }
-}
+    @GetMapping("/assessment/{assessmentId}")
+    public ResponseEntity<List<TalentAssessment>> getAllAssessmentsByAssessmentId(@PathVariable Long assessmentId) {
+        List<TalentAssessment> assessments = assessmentService.getAllAssessmentsByAssessmentId(assessmentId);
+        if (!assessments.isEmpty()) {
+            return ResponseEntity.ok(assessments);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    }

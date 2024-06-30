@@ -22,12 +22,13 @@ public class Performance {
 
     private String talentName;
     private String ekYear;
-    private int assignmentScore;
-    private int averageAttendance;
-    private int assessmentScore;
+    private String talentSkills;
+
+    private double assignmentScore;
+    private double averageAttendance;
+    private double assessmentScore;
     private int punctuality;
     private int technicalProficiency;
     private int proactiveness;
     private int timeliness;
-    private String talentSkills;
 }

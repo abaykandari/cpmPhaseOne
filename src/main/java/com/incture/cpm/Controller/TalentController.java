@@ -54,7 +54,7 @@ public class TalentController {
     public ResponseEntity<Talent> uploadMarksheets(@RequestPart MultipartFile marksheetsSemwise, @PathVariable Long talentId) throws SerialException, SQLException, IOException{
         Blob marksheetPdf = new SerialBlob(marksheetsSemwise.getBytes());
         Talent talent= talentService.getTalentById(talentId);
-        talent.setMarksheetsSemwise(marksheetPdf);
+        //talent.setMarksheetsSemwise(marksheetPdf);
         Talent updatedTalent = talentService.updateTalent(talent, talentId);
         if (updatedTalent != null) {
             performanceService.editTalentDetails(talent);
@@ -112,7 +112,7 @@ public class TalentController {
 
 
 
-    @GetMapping("/viewmarksheet/{talentId}")
+    /* @GetMapping("/viewmarksheet/{talentId}")
     public ResponseEntity<byte[]> getMarksheet(@PathVariable Long talentId) throws IOException {
         // Retrieve Talent object from the service layer
         Talent talent = talentService.getTalentById(talentId);
@@ -137,6 +137,6 @@ public class TalentController {
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-    }
+    } */
 
 }

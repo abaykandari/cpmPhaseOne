@@ -1,34 +1,36 @@
 package com.incture.cpm.Entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import javax.management.relation.Role;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-@Data
+import java.util.Set;
+ 
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "users")
 @Getter
 @Setter
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int userId;
-    @Column
-    private  String name;
-    private String email;
-    private String password;
-    @JsonIgnore
-    private  String role;
+    private Long id;
 
-    private boolean adminCheck=true;
-//    private String role;
-}
+    @Column(nullable = false, unique = true)
+    private String inctureId;
  
+    @Column(nullable = false, unique = true)
+    private String email;
+ 
+    @Column(nullable = false)
+    private String password;
+
+    private String talentName;
+    private Long talentId;
+ 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
+    private Set<String> roles;
+
+}

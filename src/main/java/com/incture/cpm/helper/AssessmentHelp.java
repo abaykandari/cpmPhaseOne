@@ -2,7 +2,7 @@ package com.incture.cpm.helper;
 
 import java.util.ArrayList;
 
-import com.incture.cpm.Entity.Assessment;
+import com.incture.cpm.Entity.TalentAssessment;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -18,8 +18,8 @@ import java.util.List;
 
 public class AssessmentHelp{
 
-    public static List<Assessment> convertExcelToAssessmentRecord(InputStream inpStream){
-        List<Assessment> list = new ArrayList<>();
+    public static List<TalentAssessment> convertExcelToAssessmentRecord(InputStream inpStream){
+        List<TalentAssessment> list = new ArrayList<>();
 
         try{
             XSSFWorkbook workbook = new XSSFWorkbook(inpStream);
@@ -35,7 +35,7 @@ public class AssessmentHelp{
                     continue;
 
                 Iterator<Cell> cells = row.cellIterator();
-                Assessment assessment = new Assessment();
+                TalentAssessment assessment = new TalentAssessment();
 
                 while (cells.hasNext()) {
                     Cell cell = cells.next();
