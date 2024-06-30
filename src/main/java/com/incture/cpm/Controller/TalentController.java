@@ -9,10 +9,7 @@ import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -54,7 +51,7 @@ public class TalentController {
     public ResponseEntity<Talent> uploadMarksheets(@RequestPart MultipartFile marksheetsSemwise, @PathVariable Long talentId) throws SerialException, SQLException, IOException{
         Blob marksheetPdf = new SerialBlob(marksheetsSemwise.getBytes());
         Talent talent= talentService.getTalentById(talentId);
-        //talent.setMarksheetsSemwise(marksheetPdf);
+        talent.setMarksheetsSemwise(marksheetPdf);
         Talent updatedTalent = talentService.updateTalent(talent, talentId);
         if (updatedTalent != null) {
             performanceService.editTalentDetails(talent);

@@ -5,9 +5,7 @@ import com.incture.cpm.Entity.EmailRequest;
 import com.incture.cpm.Service.AssignmentService;
 import com.incture.cpm.Service.EmailSenderService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;

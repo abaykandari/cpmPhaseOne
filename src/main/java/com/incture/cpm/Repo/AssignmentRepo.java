@@ -1,6 +1,5 @@
 package com.incture.cpm.Repo;
 import com.incture.cpm.Entity.Assignment;
-import com.incture.cpm.Entity.CollegeTPO;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

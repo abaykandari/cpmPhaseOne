@@ -2,7 +2,6 @@ package com.incture.cpm.helper;
  
 import com.incture.cpm.Entity.Candidate;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -33,7 +32,6 @@ public class Helper {
  
     // convert excel to list of products
  
-    @SuppressWarnings("deprecation")
     public static List<Candidate> convertExcelToListOfProduct(InputStream is) {
                 List<Candidate> list = new ArrayList<>();
         Set<String> uniqueEmails = new HashSet<>();
