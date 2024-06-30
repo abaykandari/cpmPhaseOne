@@ -4,23 +4,23 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+ 
+ 
 @Entity
-@Table(name = "candidates")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 public class Candidate {
+ 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long candidateId;
-
+ 
     private String candidateName;
     // @ManyToOne
     private String candidateCollege;
@@ -41,9 +41,7 @@ public class Candidate {
     private double cgpaUndergrad;
     private double cgpaMasters;
     private String status = "interview pending";
-
+ 
     // getters and setters
-
+ 
 }
-
-

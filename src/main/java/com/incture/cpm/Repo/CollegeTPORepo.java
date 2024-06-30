@@ -2,12 +2,7 @@ package com.incture.cpm.Repo;
 
 import com.incture.cpm.Entity.CollegeTPO;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import java.util.List;
 
 @Repository
 public interface CollegeTPORepo extends JpaRepository<CollegeTPO, Integer> {

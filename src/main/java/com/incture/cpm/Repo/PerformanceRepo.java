@@ -7,5 +7,5 @@ import com.incture.cpm.Entity.Performance;
 
 @Repository
 public interface PerformanceRepo extends JpaRepository<Performance, Long>{
-    
+
 }
