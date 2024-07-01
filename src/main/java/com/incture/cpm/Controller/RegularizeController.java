@@ -3,6 +3,7 @@ package com.incture.cpm.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.incture.cpm.Entity.Regularize;
@@ -24,12 +25,14 @@ public class RegularizeController {
     private AttendanceService attendanceService;
 
     @GetMapping("/getAll")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<Regularize>> getAllRegularization() {
         List<Regularize> employees = regularizeService.getAllRegularization();
         return new ResponseEntity<>(employees, HttpStatus.OK);
     }
 
     @GetMapping("/getAllPending")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<Regularize>> getAllPendingRegularization() {
         List<Regularize> employees = regularizeService.getAllPendingRegularization();
         return new ResponseEntity<>(employees, HttpStatus.OK);
@@ -56,24 +59,28 @@ public class RegularizeController {
     }
 
     @PostMapping("/addRegularizeByList")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> createRegularizeList(@RequestBody List<Regularize> regularizeList) {
         String message = regularizeService.createRegularizeList(regularizeList);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
     @PutMapping("/approveRegularize/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> approveRegularize(@PathVariable("id") Long id) {
         String message = attendanceService.approveRegularize(id);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
     @PutMapping("/declineRegularize/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> declineRegularize(@PathVariable("id") Long id) {
         String message = regularizeService.declineRegularize(id);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
     @DeleteMapping("/deleteRegularize/{id}") 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> deleteRegularize(@PathVariable("id") Long id) {
         String message = regularizeService.deleteRegularize(id);
         return new ResponseEntity<>(message, HttpStatus.OK);

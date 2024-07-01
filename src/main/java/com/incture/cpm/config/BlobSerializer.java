@@ -1,4 +1,4 @@
-package com.incture.cpm.Config;
+package com.incture.cpm.config;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

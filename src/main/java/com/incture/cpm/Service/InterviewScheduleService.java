@@ -7,7 +7,7 @@ import com.incture.cpm.Exception.InterviewerSchedulingNotFoundException;
 import com.incture.cpm.Repo.CollegeTPORepo;
 import com.incture.cpm.Repo.IntervieweScheduleRepo;
 import com.incture.cpm.Repo.InterviewerRepo;
-import com.incture.cpm.Config.NotificationService;
+import com.incture.cpm.config.NotificationService;
 import com.incture.cpm.Dto.InterviewerSchedulingDto;
 import com.incture.cpm.Dto.InterviewerSchedulingUpdateDto;
 import jakarta.persistence.EntityNotFoundException;

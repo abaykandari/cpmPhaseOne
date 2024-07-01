@@ -1,4 +1,4 @@
-package com.incture.cpm.Config;
+package com.incture.cpm.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

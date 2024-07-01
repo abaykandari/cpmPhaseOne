@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +26,7 @@ public class LeavesController {
     private LeavesService leavesService;
 
     @GetMapping("/getAll")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public List<Leaves> getLeaves(){
         return leavesService.getAll();
     }
@@ -36,18 +38,21 @@ public class LeavesController {
     }
 
     @PostMapping("/addLeaves")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> addLeaves(@RequestBody List<Leaves> leaves){
         String message = leavesService.addLeaves(leaves);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
     @PutMapping("/approve/{leaveId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> approve(@PathVariable("leaveId") Long leaveId){
         String message = leavesService.approve(leaveId);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
     @PutMapping("/decline/{leaveId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> decline(@PathVariable("leaveId") Long leaveId){
         String message = leavesService.decline(leaveId);
         return new ResponseEntity<>(message, HttpStatus.OK);

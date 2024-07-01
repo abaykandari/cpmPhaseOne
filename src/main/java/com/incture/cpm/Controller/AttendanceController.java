@@ -51,6 +51,7 @@ public class AttendanceController {
 
     // used temporarily for adding attendance
     @PostMapping("/addAttendance")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> addAttendance(@RequestBody Attendance attendance) {
         if (attendance == null) {
             throw new BadRequestException("Attendance data is required.");
@@ -65,6 +66,7 @@ public class AttendanceController {
 
     // used temporarily for adding attendance list
     @PostMapping("/addAttendanceByList")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> addAttendanceByList(@RequestBody List<Attendance> attendance) {
         if (attendance == null || attendance.isEmpty()) {
             throw new BadRequestException("Attendance list is required.");
