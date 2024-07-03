@@ -9,7 +9,10 @@ import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -52,6 +55,20 @@ public class TalentController {
         Blob marksheetPdf = new SerialBlob(marksheetsSemwise.getBytes());
         Talent talent= talentService.getTalentById(talentId);
         talent.setMarksheetsSemwise(marksheetPdf);
+        Talent updatedTalent = talentService.updateTalent(talent, talentId);
+        if (updatedTalent != null) {
+            performanceService.editTalentDetails(talent);
+            return new ResponseEntity<>(updatedTalent, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @PutMapping("/uploadresume/{talentId}")
+    public ResponseEntity<Talent> uploadResume(@RequestPart MultipartFile resume,
+            @PathVariable Long talentId) throws SerialException, SQLException, IOException {
+        Blob resumePdf = new SerialBlob(resume.getBytes());
+        Talent talent = talentService.getTalentById(talentId);
+        talent.setResume(resumePdf);
         Talent updatedTalent = talentService.updateTalent(talent, talentId);
         if (updatedTalent != null) {
             performanceService.editTalentDetails(talent);
@@ -109,7 +126,7 @@ public class TalentController {
 
 
 
-    /* @GetMapping("/viewmarksheet/{talentId}")
+     @GetMapping("/viewmarksheet/{talentId}")
     public ResponseEntity<byte[]> getMarksheet(@PathVariable Long talentId) throws IOException {
         // Retrieve Talent object from the service layer
         Talent talent = talentService.getTalentById(talentId);
@@ -134,6 +151,33 @@ public class TalentController {
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-    } */
+    } 
+
+    @GetMapping("/viewresume/{talentId}")
+    public ResponseEntity<byte[]> getResume(@PathVariable Long talentId) throws IOException {
+        // Retrieve Talent object from the service layer
+        Talent talent = talentService.getTalentById(talentId);
+
+        if (talent != null && talent.getResume() != null) {
+            try {
+                // Retrieve the PDF data from the Talent object
+                Blob marksheetBlob = talent.getResume();
+                byte[] pdfData = marksheetBlob.getBytes(1, (int) marksheetBlob.length());
+
+                // Set appropriate response headers for PDF content
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_PDF);
+                headers.setContentDisposition(ContentDisposition.builder("inline").filename("resume.pdf").build());
+
+                return new ResponseEntity<>(pdfData, headers, HttpStatus.OK);
+            } catch (SQLException e) {
+                // Handle exceptions appropriately
+                e.printStackTrace();
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 
 }
