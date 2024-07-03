@@ -30,7 +30,7 @@ public class UserService {
 
     public User registerUser(String email, String password, Set<String> roles, String talentName, String inctureId) {
         Optional<User> existingUser = userRepository.findByEmail(email);
-        if(!existingUser.isEmpty()) throw new BadCredentialsException("User already exists for the given email");
+        if(existingUser.isPresent()) throw new BadCredentialsException("User already exists for the given email");
         
         Optional<Talent> talentOptional = talentRepository.findByEmail(email);
         //if (talentOptional.isEmpty())   throw new BadCredentialsException("No talent info found for the given user");

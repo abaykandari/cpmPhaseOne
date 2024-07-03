@@ -266,7 +266,7 @@ public class AcademicInternsService {
                 year += 2000; // Assuming all 2 digit years are in the 2000s
             }
            
-            return String.format("%02d/%02d/%04d", day, month, year);
+            return "%02d/%02d/%04d".formatted(day, month, year);
         }
    
         return date;

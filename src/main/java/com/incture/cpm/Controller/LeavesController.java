@@ -46,14 +46,14 @@ public class LeavesController {
 
     @PutMapping("/approve/{leaveId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> approve(@PathVariable("leaveId") Long leaveId){
+    public ResponseEntity<String> approve(@PathVariable Long leaveId){
         String message = leavesService.approve(leaveId);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
     @PutMapping("/decline/{leaveId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> decline(@PathVariable("leaveId") Long leaveId){
+    public ResponseEntity<String> decline(@PathVariable Long leaveId){
         String message = leavesService.decline(leaveId);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }

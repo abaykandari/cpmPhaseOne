@@ -32,4 +32,6 @@ public class Assignment {
     private String assignedTo;
     @Column
     private int maxmarks;
+    @Column
+    private String mentorAssigned;
 }

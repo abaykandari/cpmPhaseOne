@@ -91,7 +91,7 @@ public class TalentController {
         Talent updatedTalent = talentService.updateTalent(talent, talentId);
         
         if (updatedTalent != null) {
-            performanceService.editTalentDetails(talent);
+            performanceService.editTalentDetails(updatedTalent);
             return new ResponseEntity<>(updatedTalent, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);

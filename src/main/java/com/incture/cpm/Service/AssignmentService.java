@@ -59,7 +59,8 @@ public class AssignmentService {
 
                 employeewiseAssignmentRepo.save(employeeAssignment);
 
-
+                String emailBody_2="Dear Abhimanyu You are assigend as a mentor of "+ assignment.getAssignmentName() + ",\n\n" +
+                "The deadline of the assignment is" + assignment.getAssignmentDuedate();
                 // Compose email body
                 String emailBody = "Dear " + talent.getTalentName() + ",\n\n"
                         + "You have been assigned a new assignment. Please find the details below:\n\n"
@@ -71,6 +72,7 @@ public class AssignmentService {
 
                 // Send email to talent
                 emailSenderService.sendSimpleEmail(talent.getEmail(), "New Assignment Assigned", emailBody);
+                emailSenderService.sendSimpleEmail(assignment.getMentorAssigned(), "New assignment Assigned for valuation", emailBody_2);
             } else {
                 System.out.println("Talent with email " + talent.getTalentName() + " not found.");
             }

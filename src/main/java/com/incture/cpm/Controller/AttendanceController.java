@@ -36,7 +36,7 @@ public class AttendanceController {
 
     // used in daily view
     @GetMapping("/getAttendanceByDate")
-    public ResponseEntity<Optional<List<Attendance>>> getAttendanceByDate(@RequestParam("date") String date) {
+    public ResponseEntity<Optional<List<Attendance>>> getAttendanceByDate(@RequestParam String date) {
         if (date == null || date.isEmpty()) {
             throw new BadRequestException("Date parameter is required.");
         }
@@ -82,9 +82,9 @@ public class AttendanceController {
     // used in weekly and monthly view
     @GetMapping("/getAttendanceByDateRangeAndTalent")
     public ResponseEntity<Optional<List<Attendance>>> getAttendanceByDateRangeAndTalent(
-            @RequestParam("startDate") String startDate,
-            @RequestParam("endDate") String endDate,
-            @RequestParam("talentId") Long talentId) {
+            @RequestParam String startDate,
+            @RequestParam String endDate,
+            @RequestParam Long talentId) {
         if (startDate == null || startDate.isEmpty() || endDate == null || endDate.isEmpty() || talentId == null) {
             throw new BadRequestException("Start date, end date, and talent ID are required.");
         }
@@ -100,7 +100,7 @@ public class AttendanceController {
     // give filtered attendance data w.r.t to the reporting manager
     @GetMapping("/getAllAttendanceWRTrm")
     public ResponseEntity<Optional<List<Attendance>>> getAttendanceByDateRM(
-            @RequestParam("date") String date,
+            @RequestParam String date,
             @RequestParam("rm") String reportingManager) {
         if (date == null || date.isEmpty() || reportingManager == null || reportingManager.isEmpty()) {
             throw new BadRequestException("Date and reporting manager are required.");

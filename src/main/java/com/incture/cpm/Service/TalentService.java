@@ -60,7 +60,7 @@ public class TalentService {
         if (existingTalent != null) {
            talent.setTalentId(talentId);
            talent.setCandidateId(existingTalent.getCandidateId());
-            return  talentRepository.save(talent);
+            return talentRepository.save(talent);
         }
         return null;
     }

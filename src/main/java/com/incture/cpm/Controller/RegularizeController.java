@@ -39,14 +39,14 @@ public class RegularizeController {
     }
 
     @GetMapping("/getById/{id}")
-    public ResponseEntity<Regularize> getRegularizeById(@PathVariable("id") Long id) {
+    public ResponseEntity<Regularize> getRegularizeById(@PathVariable Long id) {
         Optional<Regularize> employee = regularizeService.getRegularizeById(id);
         return employee.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @GetMapping("/getByTalentId/{talentId}")
-    public ResponseEntity<List<Regularize>> getRegularizeByTalentId(@PathVariable("talentId") Long talentId) {
+    public ResponseEntity<List<Regularize>> getRegularizeByTalentId(@PathVariable Long talentId) {
         Optional<List<Regularize>> employee = regularizeService.getRegularizeByTalentId(talentId);
         return employee.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
@@ -67,21 +67,21 @@ public class RegularizeController {
 
     @PutMapping("/approveRegularize/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> approveRegularize(@PathVariable("id") Long id) {
+    public ResponseEntity<String> approveRegularize(@PathVariable Long id) {
         String message = attendanceService.approveRegularize(id);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
     @PutMapping("/declineRegularize/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> declineRegularize(@PathVariable("id") Long id) {
+    public ResponseEntity<String> declineRegularize(@PathVariable Long id) {
         String message = regularizeService.declineRegularize(id);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
     @DeleteMapping("/deleteRegularize/{id}") 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> deleteRegularize(@PathVariable("id") Long id) {
+    public ResponseEntity<String> deleteRegularize(@PathVariable Long id) {
         String message = regularizeService.deleteRegularize(id);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }

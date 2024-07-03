@@ -39,7 +39,7 @@ public class AsssessmentController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file){
+    public ResponseEntity<?> upload(@RequestParam MultipartFile file){
         if (file.isEmpty())  return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please upload an Excel file");
         
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {

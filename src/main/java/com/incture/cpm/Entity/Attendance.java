@@ -58,6 +58,6 @@ public class Attendance {
         long hours = duration.toHours();
         long minutes = (duration.toMinutes() % 60); 
     
-        totalHours = String.format("%02d:%02d", hours, minutes);
+        totalHours = "%02d:%02d".formatted(hours, minutes);
     }
 }

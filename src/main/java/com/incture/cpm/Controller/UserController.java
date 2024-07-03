@@ -132,23 +132,17 @@ public class UserController {
         
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Combine email and password
         String auth = email + ":" + password;
-        
-        // Encode to Base64
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
-        
-        // Create Authorization header
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Basic " + encodedAuth);
         
-        // Here you would typically validate the credentials and generate a response
-        // For this example, we're just returning a success message
         User user = userService.findByEmail(email);
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(getUserDetails(user));
     } 
+
     /* public ResponseEntity<?> loginUser(@RequestParam String email, @RequestParam String password) {
         try {
             Authentication authentication = authenticationManager.authenticate(
