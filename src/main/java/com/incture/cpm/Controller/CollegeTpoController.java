@@ -1,7 +1,6 @@
 package com.incture.cpm.Controller;
 
 import com.incture.cpm.Entity.CollegeTPO;
-import com.incture.cpm.Repo.CollegeTPORepo;
 import com.incture.cpm.Service.CollegeTpoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +14,6 @@ import java.util.List;
 public class CollegeTpoController {
     @Autowired
     private CollegeTpoService myTpoService;
-    @Autowired
-    private CollegeTPORepo collegeTPORepo;
     //Create a collegeTpo
     @PostMapping("/insertCollegeData")   //frontend me add CollegeData
     public ResponseEntity<CollegeTPO> insertCollData( @RequestBody CollegeTPO collegeTPO){

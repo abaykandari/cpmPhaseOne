@@ -13,6 +13,7 @@ import com.incture.cpm.Entity.TalentAssessment;
 import com.incture.cpm.Repo.EmployeewiseAssignmentRepo;
 import com.incture.cpm.Repo.PerformanceRepo;
 import com.incture.cpm.Repo.TalentAssessmentRepository;
+import com.incture.cpm.Repo.TalentAssessmentRepository;
 import com.incture.cpm.Repo.TalentRepository;
 
 @Service
@@ -32,18 +33,26 @@ public class PerformanceService {
     public List<Performance> getAllPerformances(){
         return performanceRepo.findAll();
     }
+    
+    public Performance getPerformanceById(Long talentId) {
+        return performanceRepo.findById(talentId).get();
+    }
 
     //to be removed latern on
     public String updatePerformance(Performance performance) {
         Talent existingTalent = talentRepository.findById(performance.getTalentId()).orElseThrow(() -> new IllegalArgumentException("Talent not found"));
         
         performanceRepo.findById(performance.getTalentId()).orElseThrow(() -> new IllegalArgumentException("Performance not found"));
+        performanceRepo.findById(performance.getTalentId()).orElseThrow(() -> new IllegalArgumentException("Performance not found"));
 
         performance.setTalentName(existingTalent.getTalentName());
         performance.setEkYear(existingTalent.getEkYear());
         performance.setTalentSkills(existingTalent.getTalentSkills());
         performanceRepo.save(performance);
-        return "Performance created successfully";
+        updateAssignmentScore(existingTalent.getEmail());
+        updateAssessmentScore(performance.getTalentId());
+        updateAttendanceScore(performance.getTalentId());
+        return "Performance updated successfully";
     }
 
     public String addPerformanceWithTalent(Talent talent){
@@ -74,6 +83,7 @@ public class PerformanceService {
         existingPerformance.setAssessmentScore(performance.getAssessmentScore());
         existingPerformance.setAssignmentScore(performance.getAssignmentScore());
         existingPerformance.setAverageAttendance(performance.getAverageAttendance());
+        
         
         existingPerformance.setPunctuality(performance.getPunctuality());
         existingPerformance.setTechnicalProficiency(performance.getTechnicalProficiency());

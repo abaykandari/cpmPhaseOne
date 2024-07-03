@@ -26,6 +26,9 @@ public class AttendanceService {
     @Autowired
     RegularizeRepository regularizeRepository;
 
+    @Autowired
+    PerformanceService performanceService;
+
     // used to get full attendance list
     public List<Attendance> getAllAttendance() {
         return attendanceRepo.findAll();
@@ -40,6 +43,7 @@ public class AttendanceService {
         attendance.setTalentCategory(existingTalent.getTalentCategory());
         attendance.setOfficeLocation(existingTalent.getOfficeLocation());
         attendanceRepo.save(attendance);
+        performanceService.updateAttendanceScore(attendance.getTalentId());
         return "Attendance saved successfully";
     }
 
@@ -52,6 +56,7 @@ public class AttendanceService {
         originalAttendance.setCheckout(regularize.getCheckout());
         originalAttendance.setStatus("Present");
         attendanceRepo.save(originalAttendance);
+        performanceService.updateAttendanceScore(originalAttendance.getTalentId());
         
         regularize.setApprovalStatus("Approved");
         regularizeRepository.save(regularize);
@@ -68,6 +73,7 @@ public class AttendanceService {
             attendance.setStatus("On Leave");
             attendance.setCheckin(null);
             attendance.setCheckout(null);
+            performanceService.updateAttendanceScore(attendance.getTalentId());
         }
 
         attendanceRepo.saveAll(attendanceList);

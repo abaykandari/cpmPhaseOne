@@ -9,10 +9,7 @@ import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,7 +27,6 @@ import com.incture.cpm.Entity.Candidate;
 import com.incture.cpm.Entity.Talent;
 import com.incture.cpm.Service.TalentService;
 import com.incture.cpm.Service.PerformanceService;
-
 
 @CrossOrigin("*")
 @RestController
@@ -112,7 +108,7 @@ public class TalentController {
 
 
 
-    @GetMapping("/viewmarksheet/{talentId}")
+    /* @GetMapping("/viewmarksheet/{talentId}")
     public ResponseEntity<byte[]> getMarksheet(@PathVariable Long talentId) throws IOException {
         // Retrieve Talent object from the service layer
         Talent talent = talentService.getTalentById(talentId);

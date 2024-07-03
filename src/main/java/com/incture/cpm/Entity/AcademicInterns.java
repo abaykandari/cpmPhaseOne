@@ -11,8 +11,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.Duration;
-
 @Entity
 @Getter
 @Setter
@@ -20,28 +18,27 @@ import java.time.Duration;
 @AllArgsConstructor
 @Table(name = "academicinterns")
 public class AcademicInterns {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "skill")
+    private String meetingTitle;
+    @Column(name = "meeting_duration")
+    private String meetingDuration;
     @Column(name = "full_name")
     private String fullName;
     @Column(name = "date")
     private String date;
-    @Column(name = "join_time")
-    private String joinTime;
-    @Column(name = "leave_time")
-    private String leaveTime;
-    @Column(name = "duration")
-    private Duration duration;
-    @Column(name = "duration_minutes")
-    private Long durationMinutes;
+    @Column(name = "in_meeting_duration")
+    private String inMeetingDuration;
     @Column(name = "email")
     private String email;
     @Column(name = "role")
     private String role;
-    @Column(name = "participant_id")
-    private String participantId;
     private String status; // Present, Absent
     // Constructors, getters, and setters
+    public void setDurationMinutes(long minutes) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setDurationMinutes'");
+    }
 }

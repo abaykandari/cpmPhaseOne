@@ -1,12 +1,13 @@
 package com.incture.cpm.Repo;
+
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.incture.cpm.Entity.Candidate;
+import com.incture.cpm.Entity.Assessment;
 
 @Repository
-public interface CandidateRepository extends JpaRepository<Candidate, Long> {
-    Optional<Candidate> findByEmail(String email);
+public interface AssessmentRepo extends JpaRepository<Assessment, Long>{
+    Optional<Assessment> findByEmail(String email);
 }
