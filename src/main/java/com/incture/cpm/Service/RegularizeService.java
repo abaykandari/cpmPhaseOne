@@ -3,10 +3,10 @@ package com.incture.cpm.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.incture.cpm.Entity.Attendance;
 import com.incture.cpm.Entity.Regularize;
-import com.incture.cpm.Repo.AttendanceRepo;
+import com.incture.cpm.Entity.Talent;
 import com.incture.cpm.Repo.RegularizeRepository;
+import com.incture.cpm.Repo.TalentRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +18,7 @@ public class RegularizeService {
     private RegularizeRepository regularizeRepository;
 
     @Autowired
-    private AttendanceRepo attendanceRepo;
+    private TalentRepository talentRepo;
 
     public List<Regularize> getAllRegularization() {
         return regularizeRepository.findAll();
@@ -32,18 +32,23 @@ public class RegularizeService {
         return regularizeRepository.findById(regularizeId);
     }
 
-    public String createRegularize(Regularize regularize) {
-        Attendance attendance = attendanceRepo.findById(regularize.getTalentId()).orElseThrow(() -> new IllegalStateException("Talent not found for the given talentId"));
+    public Optional<List<Regularize>> getRegularizeByTalentId(Long talentId) {
+        return regularizeRepository.findByTalentId(talentId);
+    }
 
-        regularize.setTalentName(attendance.getTalentName());
+    public String createRegularize(Regularize regularize) {
+        Talent talent = talentRepo.findById(regularize.getTalentId()).orElseThrow(() -> new IllegalStateException("Talent not found for the given talentId"));
+
+        regularize.setTalentName(talent.getTalentName());
         regularize.setApprovalStatus("Pending");
+        regularize.setApprovalManager(talent.getReportingManager());
+
         regularizeRepository.save(regularize);
         return "saved";
     }
 
     public String deleteRegularize(Long regularizeId){
-        @SuppressWarnings("unused")
-        Regularize regularize = regularizeRepository.findById(regularizeId).orElseThrow(() -> new IllegalStateException("Regularize not found for the given id"));
+        regularizeRepository.findById(regularizeId).orElseThrow(() -> new IllegalStateException("Regularize not found for the given id"));
 
         regularizeRepository.deleteById(regularizeId);
         return "deleted";
@@ -67,4 +72,5 @@ public class RegularizeService {
         }
         return "All regularizations saved successfully";
     }
+
 }

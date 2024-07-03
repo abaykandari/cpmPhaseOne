@@ -42,6 +42,13 @@ public class RegularizeController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @GetMapping("/getByTalentId/{talentId}")
+    public ResponseEntity<List<Regularize>> getRegularizeByTalentId(@PathVariable("talentId") Long talentId) {
+        Optional<List<Regularize>> employee = regularizeService.getRegularizeByTalentId(talentId);
+        return employee.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
     @PostMapping("/addRegularize")
     public ResponseEntity<String> createRegularize(@RequestBody Regularize employee) {
         String message = regularizeService.createRegularize(employee);

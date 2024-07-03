@@ -137,6 +137,6 @@ public class TalentController {
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-    }
+    } 
 
 }

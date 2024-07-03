@@ -24,4 +24,5 @@ public class Regularize {
     private String attendanceDate;
     private String regularizeDate;
     private Long talentId;
+    private String reason;
 }

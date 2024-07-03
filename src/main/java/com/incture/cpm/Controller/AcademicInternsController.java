@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/attendance")
+@RequestMapping("/cpm/api/attendance")
 @CrossOrigin("*")
 public class AcademicInternsController {
 

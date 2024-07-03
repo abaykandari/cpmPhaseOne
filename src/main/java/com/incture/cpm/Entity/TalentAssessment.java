@@ -1,6 +1,5 @@
 package com.incture.cpm.Entity;
 
-import java.time.LocalDate;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,7 +15,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Assessment {
+public class TalentAssessment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
