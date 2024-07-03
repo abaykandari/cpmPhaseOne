@@ -24,5 +24,7 @@ public class Regularize {
     private String attendanceDate;
     private String regularizeDate;
     private Long talentId;
+    
+    @Column(nullable = true)
     private String reason;
 }
