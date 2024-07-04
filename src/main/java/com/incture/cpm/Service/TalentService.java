@@ -79,38 +79,47 @@ public class TalentService {
     // new added functionality
 
     // This functionality is for resigned employees
-    public Talent resignTalent(Long talentId, String status, String resignationReason, String date) {
+    public Talent resignTalent(Long talentId, String talentStatus, String exitReason, String exitDate,
+            String exitComment) {
         Talent talent = talentRepository.findById(talentId).orElse(null);
         if (talent == null) {
             throw new ResourceNotFoundException("No Talent exists with given Talent Id");
         }
-        talent.setTalentStatus(status);
-        // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd
-        // HH:mm:ss");
-        // String message = LocalDateTime.now().format(formatter);
-        String message = date;
-        message = message + " -> " + resignationReason;
-        talent.setExitReason(message);
+        if (talentStatus == "ACTIVE") {
+            talent.setTalentStatus(talentStatus);
+            talent.setExitReason("NA");
+            talent.setExitDate("NA");
+            talent.setExitComment("NA");
+        } else {
+            talent.setTalentStatus(talentStatus);
+            talent.setExitReason(exitReason);
+            talent.setExitDate(exitDate);
+            talent.setExitComment(exitComment);
+        }
         return talentRepository.save(talent);
     }
 
     // FOR STATS OF TALENT TABLE
 
-    // public TalentSummaryDto talentStats() {
-    // int totalTalents = talentRepository.countTotalTalents();
-    // int activeTalents = talentRepository.countActiveTalents();
-    // int inactiveTalents = talentRepository.countInactiveTalents();
-    // int declinedTalents = talentRepository.countDeclinedTalents();
-    // int resignedTalents = talentRepository.countResignedTalents();
-    // int revokedTalents = talentRepository.countRevokedTalents();
+    public TalentSummaryDto talentStats() {
+        long totalTalents = talentRepository.countTotalTalents();
+        long activeTalents = talentRepository.countActiveTalents();
+        long inactiveTalents = talentRepository.countInactiveTalents();
+        long declinedTalents = talentRepository.countDeclinedTalents();
+        long resignedTalents = talentRepository.countResignedTalents();
+        long revokedTalents = talentRepository.countRevokedTalents();
+        long talentLeftForBetterOffer = talentRepository.countBetterOfferTalents();
+        long talentLeftForHigherStudies = talentRepository.countHigherStudiesTalents();
+        long talentLeftForFamilyReasons = talentRepository.countFamilyReasonsTalents();
+        long talentLeftForHealthReasons = talentRepository.countHealthReasonsTalents();
+        long talentLeftForPerformanceIssues = talentRepository.countPerformanceIssuesTalents();
+        long talentLeftForOthers = talentRepository.countOtherReasonTalents();
 
-    // return new TalentSummaryDto(
-    // totalTalents,
-    // activeTalents,
-    // inactiveTalents,
-    // declinedTalents,
-    // resignedTalents,
-    // revokedTalents);
-    // }
+        TalentSummaryDto result = new TalentSummaryDto(totalTalents, activeTalents, inactiveTalents, declinedTalents,
+                resignedTalents, revokedTalents, talentLeftForBetterOffer, talentLeftForHigherStudies,
+                talentLeftForFamilyReasons,
+                talentLeftForHealthReasons, talentLeftForPerformanceIssues, talentLeftForOthers);
+        return result;
+    }
 
 }

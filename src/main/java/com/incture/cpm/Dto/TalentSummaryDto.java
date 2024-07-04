@@ -10,10 +10,16 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TalentSummaryDto {
-    private int totalTalents;
-    private int activeTalents;
-    private int inactiveTalents;
-    private int declinedTalents;
-    private int resignedTalents;
-    private int revokedTalents;
+    private long totalTalents;
+    private long activeTalents;
+    private long inactiveTalents;
+    private long declinedTalents;
+    private long resignedTalents;
+    private long revokedTalents;
+    private long talentLeftForBetterOffer;
+    private long talentLeftForHigherStudies;
+    private long talentLeftForFamilyReasons;
+    private long talentLeftForHealthReasons;
+    private long talentLeftForPerformanceIssues;
+    private long talentLeftForOthers;
 }

@@ -52,7 +52,11 @@ public class Talent {
 
     // new field added
     private Blob resume;
+
+    // for resignation purpose
     private String talentStatus = "ACTIVE";
+    private String exitDate;
     private String exitReason = "NA";
+    private String exitComment;
 
 }

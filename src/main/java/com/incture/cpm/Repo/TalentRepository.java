@@ -17,28 +17,41 @@ public interface TalentRepository extends JpaRepository<Talent, Long> {
 
     Optional<Talent> findByEmail(String email);
 
-    // For Summary of Talent table
+    // These all are for analytics of inactive employees/talents
 
-    // @Query(value = "SELECT COUNT(T.talent_id) FROM talent T")
-    // int countTotalTalents();
+    @Query(value = "Select count(talent_id) from talent", nativeQuery = true)
+    long countTotalTalents();
 
-    // @Query(value = "SELECT COUNT(T.talent_id) FROM talent T WHERE
-    // T.talent_status='ACTIVE'")
-    // int countActiveTalents();
+    @Query(value = "Select count(talent_id) from talent where talent_status='ACTIVE'", nativeQuery = true)
+    long countActiveTalents();
 
-    // @Query(value = "SELECT COUNT(T.talent_id) FROM talent T WHERE
-    // T.talent_status<>'ACTIVE'")
-    // int countInactiveTalents();
+    @Query(value = "Select count(talent_id) from talent where talent_status<>'ACTIVE'", nativeQuery = true)
+    long countInactiveTalents();
 
-    // @Query(value = "SELECT COUNT(T.talent_id) FROM talent T WHERE
-    // T.talent_status='DECLINED'")
-    // int countDeclinedTalents();
+    @Query(value = "Select count(talent_id) from talent where talent_status='DECLINED'", nativeQuery = true)
+    long countDeclinedTalents();
 
-    // @Query(value = "SELECT COUNT(T.talent_id) FROM talent T WHERE
-    // T.talent_status='RESIGNED'")
-    // int countResignedTalents();
+    @Query(value = "Select count(talent_id) from talent where talent_status='RESIGNED'", nativeQuery = true)
+    long countResignedTalents();
 
-    // @Query(value = "SELECT COUNT(T.talent_id) FROM talent T WHERE
-    // T.talent_status='REVOKED'")
-    // int countRevokedTalents();
+    @Query(value = "Select count(talent_id) from talent where talent_status='REVOKED'", nativeQuery = true)
+    long countRevokedTalents();
+
+    @Query(value = "Select count(talent_id) from talent where exit_reason LIKE '%Better Offer%' ", nativeQuery = true)
+    long countBetterOfferTalents();
+
+    @Query(value = "Select count(talent_id) from talent where exit_reason LIKE '%Pursuing Higher Studies%' ", nativeQuery = true)
+    long countHigherStudiesTalents();
+
+    @Query(value = "Select count(talent_id) from talent where exit_reason LIKE '%Family Reasons%' ", nativeQuery = true)
+    long countFamilyReasonsTalents();
+
+    @Query(value = "Select count(talent_id) from talent where exit_reason LIKE '%Health Reasons%' ", nativeQuery = true)
+    long countHealthReasonsTalents();
+
+    @Query(value = "Select count(talent_id) from talent where exit_reason LIKE '%Performance Issues%' ", nativeQuery = true)
+    long countPerformanceIssuesTalents();
+
+    @Query(value = "Select count(talent_id) from talent where exit_reason LIKE '%Others%' ", nativeQuery = true)
+    long countOtherReasonTalents();
 }

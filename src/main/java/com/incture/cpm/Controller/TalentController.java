@@ -185,12 +185,14 @@ public class TalentController {
 
     @PutMapping("/resign/{talentId}")
     public ResponseEntity<?> resignTalent(@PathVariable("talentId") Long talentId,
-            @RequestParam String status,
-            @RequestParam String resignationReason,
-            @RequestParam String date) {
+            @RequestParam String talentStatus,
+            @RequestParam String exitReason,
+            @RequestParam String exitDate,
+            @RequestParam("otherReason") String exitComment) {
         try {
-            Talent updatedTalent = talentService.resignTalent(talentId, status,
-                    resignationReason, date);
+            Talent updatedTalent = talentService.resignTalent(talentId,
+                    talentStatus,
+                    exitReason, exitDate, exitComment);
             return ResponseEntity.ok(updatedTalent);
         } catch (ResourceNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NO talent found with the given id");
@@ -201,8 +203,8 @@ public class TalentController {
     }
 
     // Summary stats for talent table
-    // @GetMapping("/summary")
-    // public TalentSummaryDto getEmployeeSummary() {
-    // return talentService.talentStats();
-    // }
+    @GetMapping("/summary")
+    public TalentSummaryDto getEmployeeSummary() {
+        return talentService.talentStats();
+    }
 }
