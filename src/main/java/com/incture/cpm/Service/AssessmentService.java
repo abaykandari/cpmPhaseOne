@@ -36,6 +36,10 @@ public class AssessmentService {
         return assessmentRepo.findAll();
     }
 
+    public Assessment getAssessmentByCollegeId(int collegeId) {
+        return assessmentRepo.findByCollegeId(collegeId).orElseThrow(() -> new IllegalArgumentException("Assessment for given college not found"));
+    }
+
     public AssessmentLevelOne createLevelOne(AssessmentLevelOne assessmentLevelOne) {
         String email = assessmentLevelOne.getEmail();
         candidateRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Candidate with provided email not found"));
@@ -50,7 +54,7 @@ public class AssessmentService {
         return assessmentLevelOne;
     }
 
-    public String createAssessment(AssessmentLevelOne assessmentLevelOne) {
+    public String createAssessment(AssessmentLevelOne assessmentLevelOne, int collegeId) {
         String email = assessmentLevelOne.getEmail();
         candidateRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Candidate with provided email not found"));
 
@@ -59,8 +63,9 @@ public class AssessmentService {
         assessment.setCandidateName(assessmentLevelOne.getCandidateName());
         assessment.setAssessmentLevelOne(assessmentLevelOne);
         assessmentLevelOne.updateTotalScore();
+        assessment.setCollegeId(collegeId);
         assessmentRepo.save(assessment);
-
+        
         return "Assessment Level One saved successfully";
     }
 
@@ -123,8 +128,9 @@ public class AssessmentService {
                 assessmentLevelOne.setLogicalScore((int) row.getCell(3).getNumericCellValue());
                 assessmentLevelOne.setVerbalScore((int) row.getCell(4).getNumericCellValue());
                 assessmentLevelOne.setCodingScore((int) row.getCell(5).getNumericCellValue());
-            
-                createAssessment(assessmentLevelOne);
+                
+                int collegeId = (int)row.getCell(6).getNumericCellValue(); 
+                createAssessment(assessmentLevelOne, collegeId);
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to parse Excel file: " + e.getMessage());

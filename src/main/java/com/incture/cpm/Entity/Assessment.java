@@ -30,6 +30,9 @@ public class Assessment {
     private String email;
     private String candidateName;
 
+    @JoinColumn(unique = true, nullable = false)
+    private int collegeId;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "levelOneId", referencedColumnName = "levelOneId")
     private AssessmentLevelOne assessmentLevelOne;

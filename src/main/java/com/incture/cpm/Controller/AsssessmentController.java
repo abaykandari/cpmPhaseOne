@@ -49,8 +49,13 @@ public class AsssessmentController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please upload a valid Excel file");
         } 
     }
+ 
+    @GetMapping("/getAssessmentByCollegeId")
+    public ResponseEntity<?> getAssessmentByCollegeId(@RequestParam int collegeId){
+        return new ResponseEntity<>(assessmentService.getAssessmentByCollegeId(collegeId), HttpStatus.OK);
+    }
 
-    @GetMapping("/getAllAssessments")
+    @GetMapping("/getAssessmentByCollege")
     public ResponseEntity<?> getAllAssessments(){
         return new ResponseEntity<>(assessmentService.getAllAssessments(), HttpStatus.OK);
     }

@@ -63,6 +63,7 @@ public class Team {
     private Set<Member> members=new HashSet<>();
 
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(
     name = "team_mentor", 
@@ -70,6 +71,7 @@ public class Team {
     inverseJoinColumns = @JoinColumn(name = "mentor_id"))
     Set<Mentor> mentor;
 
+    // @JsonIgnore
     @OneToOne(mappedBy = "team")
     private Manager manager;
 

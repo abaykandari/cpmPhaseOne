@@ -1,5 +1,7 @@
 package com.incture.cpm.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -28,11 +30,8 @@ public class Manager {
 
     private String name;
 
-
+    @JsonIgnore
     @OneToOne
     @JoinColumn(name = "team_id", referencedColumnName = "teamId")
     private Team team;
-
-    
-
 }

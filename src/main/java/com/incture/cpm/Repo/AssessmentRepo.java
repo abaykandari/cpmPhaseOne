@@ -10,4 +10,5 @@ import com.incture.cpm.Entity.Assessment;
 @Repository
 public interface AssessmentRepo extends JpaRepository<Assessment, Long>{
     Optional<Assessment> findByEmail(String email);
+    Optional<Assessment> findByCollegeId(int collegeId);
 }

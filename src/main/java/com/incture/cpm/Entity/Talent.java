@@ -53,4 +53,6 @@ public class Talent {
     private double cgpaMasters;
     private String officeLocation;
 
+    //new field added
+    private Blob resume;
 }
