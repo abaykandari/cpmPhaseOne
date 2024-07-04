@@ -22,15 +22,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.incture.cpm.Dto.TalentSummaryDto;
 import com.incture.cpm.Entity.Candidate;
 import com.incture.cpm.Entity.Talent;
+import com.incture.cpm.Exception.ResourceNotFoundException;
 import com.incture.cpm.Service.TalentService;
 import com.incture.cpm.Service.PerformanceService;
-
 
 @CrossOrigin("*")
 @RestController
@@ -51,9 +53,10 @@ public class TalentController {
     }
 
     @PutMapping("/uploadmarksheet/{talentId}")
-    public ResponseEntity<Talent> uploadMarksheets(@RequestPart MultipartFile marksheetsSemwise, @PathVariable Long talentId) throws SerialException, SQLException, IOException{
+    public ResponseEntity<Talent> uploadMarksheets(@RequestPart MultipartFile marksheetsSemwise,
+            @PathVariable Long talentId) throws SerialException, SQLException, IOException {
         Blob marksheetPdf = new SerialBlob(marksheetsSemwise.getBytes());
-        Talent talent= talentService.getTalentById(talentId);
+        Talent talent = talentService.getTalentById(talentId);
         talent.setMarksheetsSemwise(marksheetPdf);
         Talent updatedTalent = talentService.updateTalent(talent, talentId);
         if (updatedTalent != null) {
@@ -104,9 +107,9 @@ public class TalentController {
     }
 
     @PutMapping("/updatetalent/{talentId}")
-    public ResponseEntity<Talent> updateTalent(@RequestBody Talent talent, @PathVariable Long talentId){
+    public ResponseEntity<Talent> updateTalent(@RequestBody Talent talent, @PathVariable Long talentId) {
         Talent updatedTalent = talentService.updateTalent(talent, talentId);
-        
+
         if (updatedTalent != null) {
             performanceService.editTalentDetails(updatedTalent);
             return new ResponseEntity<>(updatedTalent, HttpStatus.OK);
@@ -116,17 +119,15 @@ public class TalentController {
 
     @DeleteMapping("/deletetalent/{talentId}")
     public ResponseEntity<Void> deleteTalent(@PathVariable Long talentId) {
-        boolean check=talentService.deleteTalent(talentId);
-        if(check){
+        boolean check = talentService.deleteTalent(talentId);
+        if (check) {
             performanceService.deletePerformance(talentId);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-
-
-     @GetMapping("/viewmarksheet/{talentId}")
+    @GetMapping("/viewmarksheet/{talentId}")
     public ResponseEntity<byte[]> getMarksheet(@PathVariable Long talentId) throws IOException {
         // Retrieve Talent object from the service layer
         Talent talent = talentService.getTalentById(talentId);
@@ -151,7 +152,7 @@ public class TalentController {
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-    } 
+    }
 
     @GetMapping("/viewresume/{talentId}")
     public ResponseEntity<byte[]> getResume(@PathVariable Long talentId) throws IOException {
@@ -180,4 +181,28 @@ public class TalentController {
         }
     }
 
+    // newly added resignation functionality
+
+    @PutMapping("/resign/{talentId}")
+    public ResponseEntity<?> resignTalent(@PathVariable("talentId") Long talentId,
+            @RequestParam String status,
+            @RequestParam String resignationReason,
+            @RequestParam String date) {
+        try {
+            Talent updatedTalent = talentService.resignTalent(talentId, status,
+                    resignationReason, date);
+            return ResponseEntity.ok(updatedTalent);
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NO talent found with the given id");
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error Occurred while updating talent status");
+        }
+    }
+
+    // Summary stats for talent table
+    // @GetMapping("/summary")
+    // public TalentSummaryDto getEmployeeSummary() {
+    // return talentService.talentStats();
+    // }
 }
