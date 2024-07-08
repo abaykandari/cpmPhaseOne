@@ -27,4 +27,7 @@ public class Regularize {
     
     @Column(nullable = true)
     private String reason;
+
+    private String extraTime; // only for reason = WFH
+    private String reasonForReject;
 }

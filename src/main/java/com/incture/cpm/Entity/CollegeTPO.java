@@ -1,5 +1,10 @@
 package com.incture.cpm.Entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -51,6 +56,7 @@ public class CollegeTPO {
 //    @JoinColumn(name = "candidateId")
 //    private List<Candidate> candidates;
 
-
-
+    @JsonIgnore
+    @OneToMany(mappedBy = "college", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Assessment> assessmentList = new ArrayList<>();
 }

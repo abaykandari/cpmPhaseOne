@@ -33,17 +33,12 @@ public class AsssessmentController {
     @Autowired
     AssessmentService assessmentService;
  
-    @PostMapping("/createLevelOne")
-    public ResponseEntity<AssessmentLevelOne> createLevelOne(@RequestBody AssessmentLevelOne assessmentLevelOne){
-        return new ResponseEntity<>(assessmentService.createLevelOne(assessmentLevelOne), HttpStatus.OK);
-    }
-
     @PostMapping("/upload")
-    public ResponseEntity<?> upload(@RequestParam MultipartFile file){
+    public ResponseEntity<?> upload(@RequestParam MultipartFile file, @RequestParam int collegeId){
         if (file.isEmpty())  return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please upload an Excel file");
         
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
-            this.assessmentService.save(file);
+            this.assessmentService.save(file, collegeId);
             return ResponseEntity.ok(Map.of("message", "File is uploaded and data is saved to db"));
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please upload a valid Excel file");
@@ -55,13 +50,9 @@ public class AsssessmentController {
         return new ResponseEntity<>(assessmentService.getAssessmentByCollegeId(collegeId), HttpStatus.OK);
     }
 
-    @GetMapping("/getAssessmentByCollege")
+    @GetMapping("/getAllAssessments")
     public ResponseEntity<?> getAllAssessments(){
         return new ResponseEntity<>(assessmentService.getAllAssessments(), HttpStatus.OK);
-    }
-
-    public String getMethodName(@RequestParam String param) {
-        return new String();
     }
     
     @PostMapping("/selectLevelOne")

@@ -1,5 +1,7 @@
 package com.incture.cpm.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -30,9 +33,6 @@ public class Assessment {
     private String email;
     private String candidateName;
 
-    @JoinColumn(unique = true, nullable = false)
-    private int collegeId;
-
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "levelOneId", referencedColumnName = "levelOneId")
     private AssessmentLevelOne assessmentLevelOne;
@@ -53,6 +53,11 @@ public class Assessment {
     @JoinColumn(name = "levelFiveId", referencedColumnName = "levelFiveId")
     private AssessmentLevelFive assessmentLevelFive;
     
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name="college_id")
+    private CollegeTPO college;
+
     private double totalScore;
 
     @PrePersist

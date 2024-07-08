@@ -46,9 +46,10 @@ public class SecurityConfig {
                     return config;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/security/", "/security/login", "/security/register", "/security/registerAdmin").permitAll()
+                                .requestMatchers("/security/", "/security/login", "/security/register", "/security/registerAdmin", "/super/security/register").permitAll()
                                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-                                .requestMatchers("/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                                .requestMatchers("/super/**").hasAuthority("ROLE_SUPERADMIN")
+                                .requestMatchers("/**").hasAnyAuthority("ROLE_USER")    //, "ROLE_ADMIN")
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

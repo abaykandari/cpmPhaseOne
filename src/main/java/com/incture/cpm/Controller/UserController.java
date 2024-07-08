@@ -92,7 +92,7 @@ public class UserController {
         roles.add("ADMIN".toUpperCase());
         roles.add("USER".toUpperCase());
         userService.registerUser(email, password, roles, talentName, inctureId);
-        return ResponseEntity.ok("User registered successfully");
+        return ResponseEntity.ok("Admin registered successfully");
     }
 
     @PostMapping("/addRole")
