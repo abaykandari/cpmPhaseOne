@@ -41,7 +41,19 @@ public class UserService {
                                         .collect(Collectors.toSet()); */
 
         Optional<Talent> talentOptional = talentRepository.findByEmail(email);
-        if (talentOptional.isEmpty()){
+        if (email.endsWith("@incture.com") || talentOptional.isPresent()){       
+            User user = new User();
+            user.setEmail(email);
+            user.setPassword(passwordEncoder.encode(password));
+            user.setTalentId(talentOptional.get().getTalentId());
+            //user.setRoles(prefixedRoles);
+            user.setRoles(roles);
+            user.setInctureId(inctureId);
+            user.setTalentName(talentName);
+            userRepository.save(user);
+
+            return "User";
+        } else{
             Optional<UnauthorizedUser> existingUnauthorizedUser = unauthorizedUserRepo.findByEmail(email);
             if(existingUnauthorizedUser.isPresent()) throw new BadCredentialsException("User already exists for the given email");
             UnauthorizedUser newUser = new UnauthorizedUser();

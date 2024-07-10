@@ -80,8 +80,12 @@ public class UserController {
         String role = "USER";
         Set<String> roles = new HashSet<>();
         roles.add(role.toUpperCase());
-        userService.registerUser(email, password, roles, talentName, inctureId);
-        return ResponseEntity.ok("User registered successfully");
+        String message = userService.registerUser(email, password, roles, talentName, inctureId);
+        if(message == "User")
+            return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED);
+        else if(message == "UnauthorizedUser")
+            return new ResponseEntity<>("User registered successfully", HttpStatus.I_AM_A_TEAPOT);
+        return new ResponseEntity<>("User non registered", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PostMapping("/registerAdmin")
