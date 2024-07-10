@@ -66,19 +66,7 @@ public class UserService {
             newUser.setStatus("Pending");
             unauthorizedUserRepo.save(newUser);
 
-            return "UnauthorizedUser created";
-        } else{
-            User user = new User();
-            user.setEmail(email);
-            user.setPassword(passwordEncoder.encode(password));
-            user.setTalentId(talentOptional.get().getTalentId());
-            //user.setRoles(prefixedRoles);
-            user.setRoles(roles);
-            user.setInctureId(inctureId);
-            user.setTalentName(talentName);
-            userRepository.save(user);
-
-            return "User created";
+            return "UnauthorizedUser";
         }
     }
 
