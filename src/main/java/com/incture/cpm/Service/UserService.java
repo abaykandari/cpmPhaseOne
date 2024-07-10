@@ -19,7 +19,7 @@ import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
- 
+
 @Service
 public class UserService {
  
@@ -97,6 +97,12 @@ public class UserService {
             .collect(Collectors.toSet());
        
         user.setRoles(prefixedRoles);
+        userRepository.save(user);
+    }
+
+    public void changePassword(String email, String password) {
+        User user = userRepository.findByEmail(email).get();
+        user.setPassword(passwordEncoder.encode(password));
         userRepository.save(user);
     }
 }

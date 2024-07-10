@@ -1,7 +1,8 @@
 package com.incture.cpm.Service;
+
 //import com.example.CampusCalendar.Entities.CollegeAllocation;
 import com.incture.cpm.Entity.CollegeTPO;
-import  com.incture.cpm.Entity.Interviewer;
+import com.incture.cpm.Entity.Interviewer;
 import com.incture.cpm.Entity.InterviewerScheduling;
 import com.incture.cpm.Exception.InterviewerSchedulingNotFoundException;
 import com.incture.cpm.Repo.CollegeTPORepo;
@@ -34,49 +35,55 @@ public class InterviewScheduleService {
     @Autowired
     private CollegeTPORepo collegeTPORepo;
     private static final Logger logger = LoggerFactory.getLogger(InterviewScheduleService.class);
+
     public InterviewerScheduling creatingFunction(InterviewerScheduling interviewerScheduling) {
-    CollegeTPO collegeTPO = interviewerScheduling.getCollegeTPO();
-    interviewerScheduling.setCollegeTPO(collegeTPO);
-    String interviewerId = interviewerScheduling.getInterviewer().getInterviewerId();
-    Interviewer interviewer = interviewerRepo.findById(interviewerId)
+        CollegeTPO collegeTPO = interviewerScheduling.getCollegeTPO();
+        interviewerScheduling.setCollegeTPO(collegeTPO);
+        String interviewerId = interviewerScheduling.getInterviewer().getInterviewerId();
+        Interviewer interviewer = interviewerRepo.findById(interviewerId)
                 .orElseThrow(() -> new RuntimeException("Interviewer not found"));
 
-    InterviewerScheduling savedInterviewerScheduling = intervieweScheduleRepo.save(interviewerScheduling);
+        InterviewerScheduling savedInterviewerScheduling = intervieweScheduleRepo.save(interviewerScheduling);
         if (!interviewer.getScheduleDetails().contains(savedInterviewerScheduling)) {
             interviewer.getScheduleDetails().add(savedInterviewerScheduling);
             interviewerRepo.save(interviewer);
         }
-        //email notification
-        String subject="Interview Allocated for Campus Hiring";
+        // email notification
+        String subject = "Interview Allocated for Campus Hiring";
         StringBuilder body = new StringBuilder();
         body.append("Dear ").append(interviewerScheduling.getInterviewer().getInterviewerName()).append(",\n\n")
-                .append("You have to take the interview on\n\n").append(interviewerScheduling.getInterviewDate()).append(", \n\n")
+                .append("You have to take the interview on\n\n").append(interviewerScheduling.getInterviewDate())
+                .append(", \n\n")
                 .append("Interview College:\n").append(interviewerScheduling.getCollegeTPO().getCollegeName());
 
-        notificationService.sendSimpleNotification(interviewerScheduling.getInterviewer().getEmail(), subject, body.toString());
+        notificationService.sendSimpleNotification(interviewerScheduling.getInterviewer().getEmail(), subject,
+                body.toString());
 
         return savedInterviewerScheduling;
-}
+    }
 
     public List<InterviewerScheduling> finding() {
         return this.intervieweScheduleRepo.findAll();
     }
 
-@Transactional
-public void deleteSchedule(int scheduleId) {
-    InterviewerScheduling existingInterviewerScheduling = intervieweScheduleRepo.findById(scheduleId)
-            .orElseThrow(() -> new EntityNotFoundException("InterviewerScheduling not found with id: " + scheduleId));
+    @Transactional
+    public void deleteSchedule(int scheduleId) {
+        InterviewerScheduling existingInterviewerScheduling = intervieweScheduleRepo.findById(scheduleId)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("InterviewerScheduling not found with id: " + scheduleId));
 
-    Interviewer interviewer = existingInterviewerScheduling.getInterviewer();
-    if(interviewer!=null){
-        interviewer.getScheduleDetails().remove(existingInterviewerScheduling); // Remove the association from the parent side
-        interviewerRepo.save(interviewer);
+        Interviewer interviewer = existingInterviewerScheduling.getInterviewer();
+        if (interviewer != null) {
+            interviewer.getScheduleDetails().remove(existingInterviewerScheduling); // Remove the association from the
+                                                                                    // parent side
+            interviewerRepo.save(interviewer);
+        }
+        existingInterviewerScheduling.setCollegeTPO(null);
+        existingInterviewerScheduling.setInterviewer(null);
+        intervieweScheduleRepo.save(existingInterviewerScheduling);
+        intervieweScheduleRepo.delete(existingInterviewerScheduling); // Delete the child entity
     }
-    existingInterviewerScheduling.setCollegeTPO(null);
-    existingInterviewerScheduling.setInterviewer(null);
-    intervieweScheduleRepo.save(existingInterviewerScheduling);
-    intervieweScheduleRepo.delete(existingInterviewerScheduling); // Delete the child entity
-}
+
     public List<InterviewerSchedulingDto> getAllInterviewerSchedulings() {
         List<InterviewerScheduling> schedulings = intervieweScheduleRepo.findAll();
         return schedulings.stream().map(scheduling -> {
@@ -90,8 +97,11 @@ public void deleteSchedule(int scheduleId) {
                 dto.setLocation("Not assigned");
                 dto.setRegion("Not assigned");
             }
-            dto.setInterviewerName((scheduling.getInterviewer()!=null) ? scheduling.getInterviewer().getInterviewerName() : "Not assigned");
-            dto.setGrade(((scheduling.getInterviewer()!=null) ? scheduling.getInterviewer().getGrade() : "Not assigned"));
+            dto.setInterviewerName(
+                    (scheduling.getInterviewer() != null) ? scheduling.getInterviewer().getInterviewerName()
+                            : "Not assigned");
+            dto.setGrade(
+                    ((scheduling.getInterviewer() != null) ? scheduling.getInterviewer().getGrade() : "Not assigned"));
             dto.setInterviewDate(scheduling.getInterviewDate());
             dto.setScheduleId(scheduling.getScheduleId());
             dto.setPptDate(scheduling.getPptDate());
@@ -100,6 +110,7 @@ public void deleteSchedule(int scheduleId) {
             return dto;
         }).collect(Collectors.toList());
     }
+
     public InterviewerScheduling updateInterviewerScheduling(InterviewerSchedulingUpdateDto dto) {
         Optional<InterviewerScheduling> schedulingOpt = intervieweScheduleRepo.findById(dto.getScheduleId());
 
@@ -127,13 +138,15 @@ public void deleteSchedule(int scheduleId) {
     }
 
     public InterviewerScheduling update(InterviewerScheduling interviewerScheduling, int myId) {
-        Optional<InterviewerScheduling> optionalExistingInterviewerScheduling=intervieweScheduleRepo.findById(myId);
+        Optional<InterviewerScheduling> optionalExistingInterviewerScheduling = intervieweScheduleRepo.findById(myId);
         if (optionalExistingInterviewerScheduling.isPresent()) {
             InterviewerScheduling existingInterviewerScheduling = optionalExistingInterviewerScheduling.get();
 
             // Update the existing entity with new values
             if (interviewerScheduling.getCollegeTPO() != null) {
-                CollegeTPO updatedCollegeTPO=collegeTPORepo.findById(interviewerScheduling.getCollegeTPO().getCollegeId()).orElse(interviewerScheduling.getCollegeTPO());
+                CollegeTPO updatedCollegeTPO = collegeTPORepo
+                        .findById(interviewerScheduling.getCollegeTPO().getCollegeId())
+                        .orElse(interviewerScheduling.getCollegeTPO());
 
                 existingInterviewerScheduling.setCollegeTPO(updatedCollegeTPO);
             }
@@ -150,7 +163,9 @@ public void deleteSchedule(int scheduleId) {
                 existingInterviewerScheduling.setInterviewDate(interviewerScheduling.getInterviewDate());
             }
             if (interviewerScheduling.getInterviewer() != null) {
-                Interviewer updatedInterviewer=interviewerRepo.findById(interviewerScheduling.getInterviewer().getInterviewerId()).orElse(interviewerScheduling.getInterviewer());
+                Interviewer updatedInterviewer = interviewerRepo
+                        .findById(interviewerScheduling.getInterviewer().getInterviewerId())
+                        .orElse(interviewerScheduling.getInterviewer());
                 existingInterviewerScheduling.setInterviewer(updatedInterviewer);
             }
             // Save the updated entity
@@ -160,4 +175,3 @@ public void deleteSchedule(int scheduleId) {
         }
     }
 }
-

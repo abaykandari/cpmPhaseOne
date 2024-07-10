@@ -56,7 +56,7 @@ public class CollegeTPO {
 //    @JoinColumn(name = "candidateId")
 //    private List<Candidate> candidates;
 
-    @JsonIgnore
+    //@JsonIgnore
     @OneToMany(mappedBy = "college", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Assessment> assessmentList = new ArrayList<>();
 }

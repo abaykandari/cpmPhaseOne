@@ -106,6 +106,18 @@ public class UserController {
         }
     }
 
+    @PostMapping("/changePassword")
+    public ResponseEntity<?> changePassword(@RequestParam String password){
+        try { 
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String email = authentication.getName();
+            userService.changePassword(email, password);
+            return ResponseEntity.ok("Role added successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
     @GetMapping("/returnUser")
     @PreAuthorize("hasRole('USER')")
     public UserDto getUserDetails(User user) {

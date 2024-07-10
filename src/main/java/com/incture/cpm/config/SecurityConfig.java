@@ -53,10 +53,11 @@ public class SecurityConfig {
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
-                        .maximumSessions(1)
-                        .maxSessionsPreventsLogin(false))
-                .userDetailsService(customUserDetailsService)
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        //.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                        //.maximumSessions(1)
+                        //.maxSessionsPreventsLogin(false))
+                //.userDetailsService(customUserDetailsService)
                 .httpBasic(withDefaults());
         return http.build();
     }

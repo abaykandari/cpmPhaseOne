@@ -53,6 +53,10 @@ public class Assessment {
     @JoinColumn(name = "levelFiveId", referencedColumnName = "levelFiveId")
     private AssessmentLevelFive assessmentLevelFive;
     
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "levelFinalId", referencedColumnName = "levelFinalId")
+    private AssessmentLevelFinal assessmentLevelFinal;
+
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name="college_id")

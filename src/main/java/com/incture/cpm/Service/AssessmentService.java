@@ -18,8 +18,8 @@ import com.incture.cpm.Entity.AssessmentLevelFour;
 import com.incture.cpm.Entity.AssessmentLevelOne;
 import com.incture.cpm.Entity.AssessmentLevelThree;
 import com.incture.cpm.Entity.AssessmentLevelTwo;
+import com.incture.cpm.Entity.AssessmentLevelFinal;
 import com.incture.cpm.Entity.Candidate;
-import com.incture.cpm.Entity.CollegeTPO;
 import com.incture.cpm.Repo.AssessmentRepo;
 import com.incture.cpm.Repo.CandidateRepository;
 import com.incture.cpm.Repo.CollegeRepository;
@@ -208,9 +208,19 @@ public class AssessmentService {
         return "Assessment Level Five saved successfully";
     }
 
+    @Transactional
     public String selectLevelFive(List<AssessmentLevelFive> levelFiveSelectedList) {
         for (AssessmentLevelFive levelFiveSelected : levelFiveSelectedList) {
             try {
+                Assessment assessment = assessmentRepo.findByEmail(levelFiveSelected.getEmail()).orElseThrow(() -> new IllegalArgumentException("Could not find assessment with the provided email"));
+                if (assessment.getAssessmentLevelFinal() == null) {
+                    assessment.setAssessmentLevelFinal(new AssessmentLevelFinal());
+                    assessment.getAssessmentLevelFinal().setEmail(levelFiveSelected.getEmail());
+                    assessment.getAssessmentLevelFinal().setCandidateName(levelFiveSelected.getCandidateName());
+                    assessmentRepo.save(assessment);
+                }
+                else throw new IllegalStateException("Candidate already selected");
+
                 Candidate candidate = candidateRepository.findByEmail(levelFiveSelected.getEmail()).get();
                 talentService.addTalentFromCandidate(candidate); // convert to talent
             } catch (IllegalArgumentException e) {
