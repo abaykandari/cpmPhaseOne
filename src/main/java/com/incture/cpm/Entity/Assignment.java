@@ -1,5 +1,9 @@
 package com.incture.cpm.Entity;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,4 +38,10 @@ public class Assignment {
     private int maxmarks;
     @Column
     private String mentorAssigned;
+    private List<Long> evaluatorId;
+    private String trainer;
+    @OneToOne
+    @JoinColumn(name = "talentId")
+    @JsonIgnore
+    private  Talent talent;
 }

@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.incture.cpm.Dto.UserDto;
 import com.incture.cpm.Entity.User;
+import com.incture.cpm.Service.OtpService;
 import com.incture.cpm.Service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,6 +36,9 @@ import jakarta.servlet.http.HttpServletRequest;
 @CrossOrigin("*")
 @RequestMapping("/security")
 public class UserController {
+ 
+    @Autowired
+    private OtpService otpService;
  
     @Autowired
     private UserService userService;
@@ -73,15 +77,45 @@ public class UserController {
         return "Admin Content.";
     }
 
-    @PostMapping("/register")
+    @GetMapping("/allOtp")
+    public Map<String, String> getOtpStore() {
+        return otpService.getOtpStore();
+    }
+
+    @PostMapping("/generateOtp") //from /register
+    public ResponseEntity<String> generateOtp(@RequestParam String email) {
+        otpService.generateOtp(email);
+        return ResponseEntity.ok("OTP has been sent to your email.");
+    }
+
+    @PostMapping("/forgotPassword")
+    public ResponseEntity<String> forgotPassword(@RequestParam String email, @RequestParam String password, @RequestParam String otp) {
+        boolean isValid = otpService.verifyOtp(email, otp);
+        if (isValid) {
+            return userService.changePassword(email, password);
+        } else {
+            return ResponseEntity.badRequest().body("Invalid OTP.");
+        }   
+    }
+    
+    @PostMapping("/register") // registration with otp verification
     public ResponseEntity<?> registerUser(@RequestParam String email,
-                                          @RequestParam String password, @RequestParam String talentName, @RequestParam String inctureId) {
+                                          @RequestParam String password, @RequestParam String talentName, @RequestParam String inctureId, @RequestParam String otp) {
         System.out.println("Register endpoint hit with email: " + email);
-        String role = "USER";
-        Set<String> roles = new HashSet<>();
-        roles.add(role.toUpperCase());
-        userService.registerUser(email, password, roles, talentName, inctureId);
-        return ResponseEntity.ok("User registered successfully");
+        boolean isValid = otpService.verifyOtp(email, otp);
+        if (isValid) {
+            String role = "USER";
+            Set<String> roles = new HashSet<>();
+            roles.add(role.toUpperCase());
+            String message = userService.registerUser(email, password, roles, talentName, inctureId);
+            if(message == "User")
+                return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED);
+            else if(message == "UnauthorizedUser")
+                return new ResponseEntity<>("User registered successfully", HttpStatus.I_AM_A_TEAPOT);
+            return new ResponseEntity<>("User non registered", HttpStatus.INTERNAL_SERVER_ERROR);
+        } else {
+            return ResponseEntity.badRequest().body("Invalid OTP.");
+        }
     }
 
     @PostMapping("/registerAdmin")
@@ -92,7 +126,7 @@ public class UserController {
         roles.add("ADMIN".toUpperCase());
         roles.add("USER".toUpperCase());
         userService.registerUser(email, password, roles, talentName, inctureId);
-        return ResponseEntity.ok("User registered successfully");
+        return ResponseEntity.ok("Admin registered successfully");
     }
 
     @PostMapping("/addRole")
@@ -100,6 +134,18 @@ public class UserController {
     public ResponseEntity<?> addRole(@RequestParam String email, @RequestParam String role){
         try { 
             userService.addRole(email, role);
+            return ResponseEntity.ok("Role added successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
+    @PostMapping("/changePassword")
+    public ResponseEntity<?> changePassword(@RequestParam String password){
+        try { 
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String email = authentication.getName();
+            userService.changePassword(email, password);
             return ResponseEntity.ok("Role added successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
