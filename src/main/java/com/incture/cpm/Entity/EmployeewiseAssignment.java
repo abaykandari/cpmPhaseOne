@@ -35,5 +35,7 @@ public class EmployeewiseAssignment {
     private int maxmarks;
     @Column
     private String employeeAssignmentFeedback;
+    @Column
+    private String evaluatorName;
 
 }

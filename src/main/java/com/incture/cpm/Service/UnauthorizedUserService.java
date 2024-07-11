@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,8 @@ public class UnauthorizedUserService {
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JavaMailSender mailSender;
 
     public List<UnauthorizedUser> getAllRequests() {
         return unauthorizedUserRepository.findAll();
@@ -37,10 +41,21 @@ public class UnauthorizedUserService {
 
             unauthorizedUser.setStatus("Approved");
             unauthorizedUserRepository.save(unauthorizedUser);
+            sendStatusEmail(unauthorizedUser.getEmail(), "approved");
+            //
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
             throw new RuntimeException("An unexpected error occurred while approving the request.", e);
         }
+    }
+
+    private void sendStatusEmail(String email, String status) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("CPM -> Your OTP Code");
+        if(status == "approved") message.setText("Your Registration request is approved :)");
+        else message.setText("Your Registration request is declined :(");
+        mailSender.send(message);
     }
     
     public void declineRequest(Long id) {
@@ -49,6 +64,7 @@ public class UnauthorizedUserService {
         
             unauthorizedUser.setStatus("Declined");
             unauthorizedUserRepository.save(unauthorizedUser);
+            sendStatusEmail(unauthorizedUser.getEmail(), "declined");
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
             throw new RuntimeException("An unexpected error occurred while approving the request.", e);

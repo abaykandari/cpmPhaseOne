@@ -1,6 +1,7 @@
 package com.incture.cpm.Service;
  
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -100,9 +101,10 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void changePassword(String email, String password) {
+    public ResponseEntity<String> changePassword(String email, String password) {
         User user = userRepository.findByEmail(email).get();
         user.setPassword(passwordEncoder.encode(password));
         userRepository.save(user);
+        return ResponseEntity.ok("Password changed successfully");
     }
 }
