@@ -88,12 +88,25 @@ public class ManagerService {
     }
 
     public String deleteManager(Long managerId) {
+        // Optional<Manager> manager = managerRepository.findById(managerId);
+        // if (manager.isEmpty()) {
+        // return "No Team managar is present with given ManagerId";
+        // }
+        // managerRepository.delete(manager.get());
+        // return "Team Manager Removed Successfully";
         Optional<Manager> manager = managerRepository.findById(managerId);
         if (manager.isEmpty()) {
-            return "No Team managar is present with given ManagerId";
+            return "No Team Manager is present with given ManagerId";
         }
-        managerRepository.delete(manager.get());
-        return "Team Manager Removed Successfully";
+
+        try {
+            managerRepository.deleteById(managerId);
+            return "Team Manager Removed Successfully 111";
+        } catch (Exception e) {
+            // Log the exception
+            e.printStackTrace();
+            return "Error occurred while deleting the Team Manager";
+        }
     }
 
     public String updateManager(Long managerId, Manager updateManager) {
@@ -107,11 +120,14 @@ public class ManagerService {
     }
 
     public Manager addAndUpdateManager(Long talentId, Long teamId, Long managerId) {
+        // if (managerId != -1) {
         Optional<Manager> existingManager = managerRepository.findByManagerIdAndTeamId(managerId, teamId);
         if (existingManager.isPresent()) {
             @SuppressWarnings("unused")
             String msg = deleteManager(managerId);
+            System.out.println(msg);
         }
+        // }
         Manager manager = addManager(talentId, teamId);
         return manager;
     }

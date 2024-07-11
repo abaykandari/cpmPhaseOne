@@ -60,12 +60,12 @@ public class Team {
     private Set<Member> members = new HashSet<>();
 
     // @JsonIgnore
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "team_mentor", joinColumns = @JoinColumn(name = "team_id"), inverseJoinColumns = @JoinColumn(name = "mentor_id"))
     Set<Mentor> mentor;
 
     // @JsonIgnore
-    @OneToOne(mappedBy = "team")
+    @OneToOne(mappedBy = "team"/* , cascade = CascadeType.ALL */)
     private Manager manager;
 
 }

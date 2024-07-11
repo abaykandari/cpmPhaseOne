@@ -18,7 +18,13 @@ public interface ManagerRepository extends JpaRepository<Manager, Long> {
 
     Optional<Manager> findByTalentId(Long talentId);
 
-    @Query(value = "SELECT a FROM Manager a WHERE a.managerId = :managerId AND a.teamId = :teamId", nativeQuery = true)
+    // @Query(value = "SELECT a FROM Manager a WHERE a.managerId = :managerId AND
+    // a.teamId = :teamId", nativeQuery = true)
+    // Optional<Manager> findByManagerIdAndTeamId(
+    // @Param("managerId") Long managerId,
+    // @Param("teamId") Long teamId);
+
+    @Query(value = "SELECT * FROM manager WHERE manager_id = :managerId AND team_id = :teamId", nativeQuery = true)
     Optional<Manager> findByManagerIdAndTeamId(
             @Param("managerId") Long managerId,
             @Param("teamId") Long teamId);

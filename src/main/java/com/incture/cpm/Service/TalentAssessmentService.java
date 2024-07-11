@@ -72,14 +72,16 @@ public class TalentAssessmentService {
         if (assessment.isPresent()) {
             TalentAssessment talentAssessment = assessment.get();
             List<Double> marks = talentAssessment.getScores();
-            marks.add(score);
+            int size = marks.size();
+            marks.set(size - 1, score);
             talentAssessment.setScores(marks);
 
             LocalDateTime now = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String formattedDateTime = now.format(formatter);
             talentAssessment.setComments(
-                    formattedDateTime + ": Assessment Score Updated Manually= " + score + "(" + reason + ")" + "\n");
+                    formattedDateTime + ": Assessment Score Updated Manually= " + score + "(" + reason + ")" + "\n"
+                            + talentAssessment.getComments());
             return assessmentRepository.save(talentAssessment);
         }
         return null;
