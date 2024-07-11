@@ -61,9 +61,10 @@ public class ManagerController {
     }
 
     @PostMapping("/addManager")
-    public ResponseEntity<?> addManager(@RequestParam Long talentId, @RequestParam Long teamId) {
+    public ResponseEntity<?> addManager(@RequestParam Long talentId, @RequestParam Long teamId,
+            @RequestParam Long managerId) {
         try {
-            Manager manager = managerService.addManager(talentId, teamId);
+            Manager manager = managerService.addAndUpdateManager(talentId, teamId, managerId);
             return ResponseEntity.status(HttpStatus.CREATED).body(manager);
         } catch (ResourceAlreadyExistsException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());

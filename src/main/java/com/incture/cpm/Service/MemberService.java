@@ -6,12 +6,16 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.incture.cpm.Entity.Manager;
 import com.incture.cpm.Entity.Member;
+import com.incture.cpm.Entity.Mentor;
 import com.incture.cpm.Entity.Talent;
 import com.incture.cpm.Entity.Team;
 import com.incture.cpm.Exception.ResourceAlreadyExistsException;
 import com.incture.cpm.Exception.ResourceNotFoundException;
+import com.incture.cpm.Repo.ManagerRepository;
 import com.incture.cpm.Repo.MemberRepository;
+import com.incture.cpm.Repo.MentorRepository;
 import com.incture.cpm.Repo.TalentRepository;
 import com.incture.cpm.Repo.TeamRepository;
 
@@ -30,19 +34,24 @@ public class MemberService {
     @Autowired
     private TeamService teamService;
 
+    @Autowired
+    private MentorRepository mentorRepository;
 
-    public Optional<Member> getMemberById(Long memberId){
+    @Autowired
+    private ManagerRepository managerRepository;
+
+    public Optional<Member> getMemberById(Long memberId) {
         return memberRepository.findById(memberId);
     }
 
-    public List<Member> getAllMembers(){
+    public List<Member> getAllMembers() {
         return memberRepository.findAll();
     }
 
-    public List<Member> getMembersOfTeam(Long teamId){
-        List<Member> memberList=memberRepository.findByTeam(teamRepository.findById(teamId).get());
-        if(memberList.isEmpty()){
-            throw new ResourceNotFoundException("No Members Present in the team with Id " +teamId );
+    public List<Member> getMembersOfTeam(Long teamId) {
+        List<Member> memberList = memberRepository.findByTeam(teamRepository.findById(teamId).get());
+        if (memberList.isEmpty()) {
+            throw new ResourceNotFoundException("No Members Present in the team with Id " + teamId);
         }
         return memberList;
     }
@@ -51,6 +60,18 @@ public class MemberService {
         Optional<Member> existingMember = memberRepository.findByTalentId(talentId);
         if (existingMember.isPresent()) {
             throw new ResourceAlreadyExistsException("Talent already exists in another team");
+        }
+
+        Optional<Mentor> mentor = mentorRepository.findByTalentId(talentId);
+        if (mentor.isPresent()) {
+            throw new ResourceAlreadyExistsException(
+                    "Talent Already present as a Mentor : Team Member Role Could not be assigned ");
+        }
+
+        Optional<Manager> manager = managerRepository.findByTalentId(talentId);
+        if (manager.isPresent()) {
+            throw new ResourceAlreadyExistsException(
+                    "Talent Already present as a Project Manager : Team Member Role Could not be assigned ");
         }
 
         Optional<Talent> talent = talentRepository.findById(talentId);
@@ -75,19 +96,18 @@ public class MemberService {
         return memberRepository.save(createdMember);
     }
 
-
-    public String deleteMember(Long memberId){
-        Optional<Member> member=memberRepository.findById(memberId);
-        if(member.isEmpty()){
+    public String deleteMember(Long memberId) {
+        Optional<Member> member = memberRepository.findById(memberId);
+        if (member.isEmpty()) {
             return "No Team member is present with given MemberId";
         }
-        Long teamId =member.get().getTeam().getTeamId();
+        Long teamId = member.get().getTeam().getTeamId();
         teamService.decrementMemberCount(teamId);
         memberRepository.delete(member.get());
         return "Team Member Removed Successfully";
     }
 
-    public String updateMember(Long memberId,Member updateMember){
+    public String updateMember(Long memberId, Member updateMember) {
         Optional<Member> member = memberRepository.findById(memberId);
         if (member.isEmpty()) {
             return "No Team member is present with given MemberId";

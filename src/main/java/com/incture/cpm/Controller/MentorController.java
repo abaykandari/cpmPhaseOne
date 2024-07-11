@@ -48,7 +48,7 @@ public class MentorController {
     @PostMapping("/addMentor")
     public ResponseEntity<?> addMentor(@RequestParam Long talentId, @RequestParam Long teamId) {
         try {
-            String result = mentorService.addMentor(talentId, teamId);
+            Mentor result = mentorService.addMentor(talentId, teamId);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (ResourceNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());

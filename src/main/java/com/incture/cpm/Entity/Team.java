@@ -25,55 +25,47 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name="team")
+@Table(name = "team")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Team {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long teamId;
     private String teamName;
     private int membersCount;
-    private int progress; 
+    private int progress;
 
     // @JsonIgnore
     private Blob presentationFile;// should be in presentation
 
-
-
-    //mapped to inkathon
+    // mapped to inkathon
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name="inkathon_id")
+    @JoinColumn(name = "inkathon_id")
     private Inkathon inkathon;
 
-    //mapped to projects
+    // mapped to projects
     // @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "project_id")
     private Projects projects;
 
-
-    //mapped to members
+    // mapped to members
     // @JsonIgnore
-    @OneToMany(mappedBy = "team", cascade =CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<Member> members=new HashSet<>();
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Member> members = new HashSet<>();
 
-
-    @JsonIgnore
+    // @JsonIgnore
     @ManyToMany
-    @JoinTable(
-    name = "team_mentor", 
-    joinColumns = @JoinColumn(name = "team_id"), 
-    inverseJoinColumns = @JoinColumn(name = "mentor_id"))
+    @JoinTable(name = "team_mentor", joinColumns = @JoinColumn(name = "team_id"), inverseJoinColumns = @JoinColumn(name = "mentor_id"))
     Set<Mentor> mentor;
 
     // @JsonIgnore
     @OneToOne(mappedBy = "team")
     private Manager manager;
-
 
 }

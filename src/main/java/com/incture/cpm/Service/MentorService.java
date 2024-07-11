@@ -1,6 +1,5 @@
 package com.incture.cpm.Service;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -9,11 +8,15 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
+import com.incture.cpm.Entity.Manager;
+import com.incture.cpm.Entity.Member;
 import com.incture.cpm.Entity.Mentor;
 import com.incture.cpm.Entity.Talent;
 import com.incture.cpm.Entity.Team;
+import com.incture.cpm.Exception.ResourceAlreadyExistsException;
 import com.incture.cpm.Exception.ResourceNotFoundException;
+import com.incture.cpm.Repo.ManagerRepository;
+import com.incture.cpm.Repo.MemberRepository;
 import com.incture.cpm.Repo.MentorRepository;
 import com.incture.cpm.Repo.TalentRepository;
 import com.incture.cpm.Repo.TeamRepository;
@@ -30,6 +33,11 @@ public class MentorService {
     @Autowired
     private TeamRepository teamRepository;
 
+    @Autowired
+    private MemberRepository memberRepository;
+
+    @Autowired
+    private ManagerRepository managerRepository;
 
     public Optional<Mentor> getMentorById(Long mentorId) {
         return mentorRepository.findById(mentorId);
@@ -47,12 +55,23 @@ public class MentorService {
         return mentorList;
     }
 
-   
-    public String addMentor(Long talentId, Long teamId) {
+    public Mentor addMentor(Long talentId, Long teamId) {
         Optional<Talent> talent = talentRepository.findById(talentId);
         if (talent.isEmpty()) {
             throw new ResourceNotFoundException("No Talent exist with given Talent Id");
         }
+        Optional<Member> member = memberRepository.findByTalentId(talentId);
+        if (member.isPresent()) {
+            throw new ResourceAlreadyExistsException(
+                    "Talent Already present as a member : Mentor Role Could not be assigned ");
+        }
+
+        Optional<Manager> manager = managerRepository.findByTalentId(talentId);
+        if (manager.isPresent()) {
+            throw new ResourceAlreadyExistsException(
+                    "Talent Already present as a Project Manager : Mentor Role Could not be assigned ");
+        }
+
         Optional<Team> team = teamRepository.findById(teamId);
         if (team.isEmpty()) {
             throw new ResourceNotFoundException("Incorrect Team Id given");
@@ -69,7 +88,7 @@ public class MentorService {
         createdMentor.setTeam(teams);
 
         // Save the Mentor to get its ID
-        mentorRepository.save(createdMentor);
+        Mentor response = mentorRepository.save(createdMentor);
 
         // Add the Mentor to the Team
         Set<Mentor> mentors = team.get().getMentor();
@@ -82,22 +101,24 @@ public class MentorService {
         // Save the Team to update the relationship
         teamRepository.save(team.get());
 
-        return "Team Mentor Added Successfully";
+        return response;
     }
 
-
-    
     public String deleteMentor(Long mentorId) {
-        Optional<Mentor> mentor = mentorRepository.findById(mentorId);
-        if (mentor.isEmpty()) {
+        Optional<Mentor> mentorOptional = mentorRepository.findById(mentorId);
+        if (mentorOptional.isEmpty()) {
             return "No Team mentor is present with given MentorId";
         }
-        Set<Team> teams = mentor.get().getTeam();
-        List<Long> ids=new ArrayList<>();
-        for(Team team:teams){
-            ids.add(team.getTeamId());
+
+        Mentor mentor = mentorOptional.get();
+        Set<Team> teams = mentor.getTeam();
+
+        for (Team team : teams) {
+            team.getMentor().remove(mentor);
+            teamRepository.save(team);
         }
-        mentorRepository.deleteAllById(ids);
+
+        mentorRepository.delete(mentor);
         return "Team Mentor Removed Successfully";
     }
 

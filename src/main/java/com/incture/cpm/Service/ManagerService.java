@@ -7,17 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.incture.cpm.Entity.Manager;
+import com.incture.cpm.Entity.Member;
+import com.incture.cpm.Entity.Mentor;
 import com.incture.cpm.Entity.Talent;
 import com.incture.cpm.Entity.Team;
 import com.incture.cpm.Exception.ResourceAlreadyExistsException;
 import com.incture.cpm.Exception.ResourceNotFoundException;
 import com.incture.cpm.Repo.ManagerRepository;
+import com.incture.cpm.Repo.MemberRepository;
+import com.incture.cpm.Repo.MentorRepository;
 import com.incture.cpm.Repo.TalentRepository;
 import com.incture.cpm.Repo.TeamRepository;
 
 @Service
 public class ManagerService {
-     @Autowired
+    @Autowired
     private ManagerRepository managerRepository;
 
     @Autowired
@@ -26,18 +30,24 @@ public class ManagerService {
     @Autowired
     private TeamRepository teamRepository;
 
-    public Optional<Manager> getManagerById(Long managerId){
+    @Autowired
+    private MemberRepository memberRepository;
+
+    @Autowired
+    private MentorRepository mentorRepository;
+
+    public Optional<Manager> getManagerById(Long managerId) {
         return managerRepository.findById(managerId);
     }
 
-    public List<Manager> getAllManager(){
+    public List<Manager> getAllManager() {
         return managerRepository.findAll();
     }
 
-    public List<Manager> getManagerOfTeam(Long teamId){
-        List<Manager> managerList= managerRepository.findByTeam(teamRepository.findById(teamId).get());
-        if(managerList.isEmpty()){
-            throw new ResourceNotFoundException("No Manager Present in the team with Id " +teamId );
+    public List<Manager> getManagerOfTeam(Long teamId) {
+        List<Manager> managerList = managerRepository.findByTeam(teamRepository.findById(teamId).get());
+        if (managerList.isEmpty()) {
+            throw new ResourceNotFoundException("No Manager Present in the team with Id " + teamId);
         }
         return managerList;
     }
@@ -46,6 +56,18 @@ public class ManagerService {
         Optional<Manager> existingManager = managerRepository.findByTalentId(talentId);
         if (existingManager.isPresent()) {
             throw new ResourceAlreadyExistsException("Manager already exists in another team");
+        }
+
+        Optional<Member> member = memberRepository.findByTalentId(talentId);
+        if (member.isPresent()) {
+            throw new ResourceAlreadyExistsException(
+                    "Talent Already present as a member : Project Manager Role Could not be assigned ");
+        }
+
+        Optional<Mentor> mentor = mentorRepository.findByTalentId(talentId);
+        if (mentor.isPresent()) {
+            throw new ResourceAlreadyExistsException(
+                    "Talent Already present as a Mentor : Project Manager Role Could not be assigned ");
         }
 
         Optional<Talent> talent = talentRepository.findById(talentId);
@@ -65,23 +87,32 @@ public class ManagerService {
         return managerRepository.save(createdManager);
     }
 
-
-    public String deleteManager(Long managerId){
-        Optional<Manager> manager= managerRepository.findById(managerId);
-        if(manager.isEmpty()){
-            return "No Team member is present with given MemberId";
-        }
-        managerRepository.delete(manager.get());
-        return "Team Member Removed Successfully";
-    }
-
-    public String updateManager(Long managerId,Manager updateManager){
+    public String deleteManager(Long managerId) {
         Optional<Manager> manager = managerRepository.findById(managerId);
         if (manager.isEmpty()) {
-            return "No Team member is present with given MemberId";
+            return "No Team managar is present with given ManagerId";
+        }
+        managerRepository.delete(manager.get());
+        return "Team Manager Removed Successfully";
+    }
+
+    public String updateManager(Long managerId, Manager updateManager) {
+        Optional<Manager> manager = managerRepository.findById(managerId);
+        if (manager.isEmpty()) {
+            return "No Team manager is present with given ManagerId";
         }
         updateManager.setManagerId(managerId);
         managerRepository.save(updateManager);
-        return "Team Member details updated successfully";
+        return "Team Manager details updated successfully";
+    }
+
+    public Manager addAndUpdateManager(Long talentId, Long teamId, Long managerId) {
+        Optional<Manager> existingManager = managerRepository.findByManagerIdAndTeamId(managerId, teamId);
+        if (existingManager.isPresent()) {
+            @SuppressWarnings("unused")
+            String msg = deleteManager(managerId);
+        }
+        Manager manager = addManager(talentId, teamId);
+        return manager;
     }
 }
