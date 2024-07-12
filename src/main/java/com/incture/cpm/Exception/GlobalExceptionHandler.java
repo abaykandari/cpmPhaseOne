@@ -49,4 +49,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.OK)
                 .header("Content-Type", "application/json").body(responseJson.toString());
     }
+//    @ExceptionHandler(value = TrainerNotFoundException.class)
+//    @ResponseBody
+//    public  ResponseEntity<String> handleTrainerNotFoundException(TrainerNotFoundException ex){
+//        JSONObject responseJson=new JSONObject();
+//        responseJson.put("status", false);
+//        responseJson.put("message", "Not able to find your id check it once");
+//        responseJson.put("statusCode", "404");
+//        return ResponseEntity.status(HttpStatus.OK)
+//                .header("Content-Type", "application/json").body(responseJson.toString());
+//    }
 }

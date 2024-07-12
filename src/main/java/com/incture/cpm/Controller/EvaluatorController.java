@@ -13,7 +13,7 @@ import java.util.List;
 @RequestMapping("/api/admin/evaluator")
 @CrossOrigin("*")
 public class EvaluatorController {
-    @Autowired
+    @Autowired 
     private EvaluatorService evaluatorService;
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/create")

@@ -4,6 +4,7 @@ import com.incture.cpm.Entity.ArchievedColleges;
 import com.incture.cpm.Entity.CollegeTPO;
 import com.incture.cpm.Repo.ArchievedCollegeRepo;
 import com.incture.cpm.Repo.CollegeTPORepo;
+import com.incture.cpm.Service.ArchieveService;
 import com.incture.cpm.Service.CollegeTpoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +23,16 @@ public class CollegeTpoController {
     private ArchievedCollegeRepo archievedCollegeRepo;
     @Autowired
     private CollegeTPORepo collegeTPORepo;
+    @Autowired
+    private ArchieveService archieveService;
     //Create a collegeTpo
     @PostMapping("/insertCollegeData")   //frontend me add CollegeData
     public ResponseEntity<CollegeTPO> insertCollData( @RequestBody CollegeTPO collegeTPO){
 
         return ResponseEntity.ok(myTpoService.insertFunction(collegeTPO));
    }
-   //read the collegesTpo
-    
+
+
 //    @CrossOrigin(origins = "http://localhost:5173")
    @GetMapping("/viewData")
     public List<CollegeTPO> viewData(){
@@ -56,13 +59,8 @@ public class CollegeTpoController {
     public void deleteCollegeTPO(@PathVariable int collegeId) {
         myTpoService.deleteCollegeTPO(collegeId);
     }
-//    @DeleteMapping("/multipleDelete")
-//    public String deleteEntities(@RequestBody List<Integer> ids) {
-//        collegeTPORepo.deleteEntitiesByIdIn(ids);
-//        return "Entities deleted successfully";
-//    }
 
-@DeleteMapping("/multipleDelete")
+@DeleteMapping("/deleteandarchieve")
 public String deleteEntities(@RequestBody List<Integer> ids) throws Exception{
     for (Integer id : ids) {
         CollegeTPO existingCollegeTpo=collegeTPORepo.findById(id).orElse(null);
@@ -72,9 +70,8 @@ public String deleteEntities(@RequestBody List<Integer> ids) throws Exception{
             myTpoService.deleteCollegeTPO(id);
 
         }
-//        myTpoService.deleteCollegeTPO(id);
     }
-    return "Entities deleted successfully";
+    return "Entities deleted and archieved successfully";
 }
 public ArchievedColleges converterMethod(CollegeTPO collegeTPO){
         ArchievedColleges archievedColleges=new ArchievedColleges();
@@ -95,5 +92,8 @@ public ArchievedColleges converterMethod(CollegeTPO collegeTPO){
         return archievedColleges;
 
 }
-
+@GetMapping("/readarchievecollege")
+    public ResponseEntity<List<ArchievedColleges>> view(){
+        return ResponseEntity.ok(archieveService.view());
+}
 }
