@@ -1,4 +1,5 @@
 package com.incture.cpm.Entity;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
@@ -14,13 +15,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name="member")
+@Table(name = "member")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Member {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberId;
@@ -30,7 +31,7 @@ public class Member {
     private String ekYear;
     private String role;
     private String skills;
-    private String performanceRating;
+    private int performanceRating;
 
     @JsonIgnore
     @ManyToOne

@@ -17,7 +17,7 @@ import java.util.Optional;
 @Service
 public class TeamService {
     @Autowired
-    private  TeamRepository teamRepository;
+    private TeamRepository teamRepository;
 
     @Autowired
     private InkathonRepository inkathonRepository;
@@ -47,18 +47,16 @@ public class TeamService {
         return team;
     }
 
-
-    public Team createTeam(Long inkathonId,Long projectId,Team team) throws IOException {
-        Optional<Inkathon> inkathon=inkathonRepository.findById(inkathonId);
-        Optional<Projects> project=projectsRepository.findById(projectId);
-        if(inkathon.isEmpty() || project.isEmpty()){
+    public Team createTeam(Long inkathonId, Long projectId, Team team) throws IOException {
+        Optional<Inkathon> inkathon = inkathonRepository.findById(inkathonId);
+        Optional<Projects> project = projectsRepository.findById(projectId);
+        if (inkathon.isEmpty() || project.isEmpty()) {
             throw new ResourceNotFoundException("Inkathon with id " + inkathonId + " not found");
         }
         team.setInkathon(inkathon.get());
         team.setProjects(project.get());
         return teamRepository.save(team);
     }
-
 
     public Team updateTeam(Long id, Long projectId, Team updatedTeam) {
         Optional<Team> existingTeamOptional = teamRepository.findById(id);
@@ -84,7 +82,7 @@ public class TeamService {
         return teamRepository.save(existingTeam);
     }
 
-    public Team updateTeamForPresentationFile(Long id, Team team) {
+    public Team updateTeamForPresentationFileOrProgress(Long id, Team team) {
         Optional<Team> existingTeam = teamRepository.findById(id);
         if (existingTeam.isEmpty()) {
             throw new ResourceNotFoundException("Team with id " + id + " not found");
@@ -101,14 +99,12 @@ public class TeamService {
         teamRepository.deleteById(id);
     }
 
-
-    //***************** */
-
+    // ***************** */
 
     public void incrementMemberCount(Long teamId) {
-        Optional<Team> team=teamRepository.findById(teamId);
-        Team incrementTeam=team.get();
-        incrementTeam.setMembersCount(incrementTeam.getMembersCount()+1);
+        Optional<Team> team = teamRepository.findById(teamId);
+        Team incrementTeam = team.get();
+        incrementTeam.setMembersCount(incrementTeam.getMembersCount() + 1);
         incrementTeam.setTeamId(teamId);
         teamRepository.save(incrementTeam);
     }
@@ -120,5 +116,5 @@ public class TeamService {
         incrementTeam.setTeamId(teamId);
         teamRepository.save(incrementTeam);
     }
-    
+
 }

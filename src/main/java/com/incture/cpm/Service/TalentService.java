@@ -1,14 +1,21 @@
 package com.incture.cpm.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.incture.cpm.Dto.TalentSummaryDto;
 import com.incture.cpm.Entity.Candidate;
+import com.incture.cpm.Entity.Manager;
+import com.incture.cpm.Entity.Member;
+import com.incture.cpm.Entity.Mentor;
 import com.incture.cpm.Entity.Talent;
 import com.incture.cpm.Exception.ResourceNotFoundException;
+import com.incture.cpm.Repo.ManagerRepository;
+import com.incture.cpm.Repo.MemberRepository;
+import com.incture.cpm.Repo.MentorRepository;
 import com.incture.cpm.Repo.TalentRepository;
 
 @Service
@@ -16,6 +23,24 @@ public class TalentService {
 
     @Autowired
     private TalentRepository talentRepository;
+
+    @Autowired
+    private MemberService memberService;
+
+    @Autowired
+    private MentorService mentorService;
+
+    @Autowired
+    private ManagerService managerService;
+
+    @Autowired
+    private MemberRepository memberRepository;
+
+    @Autowired
+    private MentorRepository mentorRepository;
+
+    @Autowired
+    private ManagerRepository managerRepository;
 
     public Talent addTalentFromCandidate(Candidate candidate) {
         Talent existingtTalent = talentRepository.findByCandidateId(candidate.getCandidateId());
@@ -95,6 +120,25 @@ public class TalentService {
             talent.setExitReason(exitReason);
             talent.setExitDate(exitDate);
             talent.setExitComment(exitComment);
+
+            // remove the talent from the team(whether Project Manager, Mentor, Member of
+            // the team ) when he will be inactive;
+
+            Optional<Member> member = memberRepository.findByTalentId(talentId);
+            if (member.isPresent()) {
+                memberService.deleteMember(member.get().getMemberId());
+            }
+
+            Optional<Mentor> mentor = mentorRepository.findByTalentId(talentId);
+            if (mentor.isPresent()) {
+                mentorService.deleteMentor(mentor.get().getMentorId());
+            }
+
+            Optional<Manager> manager = managerRepository.findByTalentId(talentId);
+            if (manager.isPresent()) {
+                managerService.deleteManager(manager.get().getManagerId());
+            }
+
         }
         return talentRepository.save(talent);
     }

@@ -86,4 +86,28 @@ public class MemberController {
                     .body("Error updating member: " + ex.getMessage());
         }
     }
+
+    @PutMapping("/updatePerformance/{memberId}")
+    public ResponseEntity<String> givePerformanceRating(@PathVariable Long memberId, @RequestParam int performance) {
+        try {
+            Optional<Member> member = memberService.getMemberById(memberId);
+            if (member.isPresent()) {
+                if (performance > 5) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Progress should be in the range 1 to 5");
+                }
+                member.get().setPerformanceRating(performance);
+                String msg = memberService.updateMember(memberId, member.get());
+                if (msg != null) {
+                    return ResponseEntity.status(HttpStatus.OK).body(msg);
+                }
+            }
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        return new ResponseEntity<>("Error Updating Performance Rating", HttpStatus.BAD_REQUEST);
+    }
+
 }
