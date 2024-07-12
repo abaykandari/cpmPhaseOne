@@ -85,34 +85,34 @@ public class Helper {
                         case 8:
                             candidate.setTwelthPercent(cell.getNumericCellValue());
                             break;
-                        case 9:
+/*                         case 9:
                             candidate.setMarksheetsSemwise(cell.getStringCellValue());
-                            break;
-                        case 10:
+                            break; */
+                        case 9:
                             candidate.setCurrentLocation(cell.getStringCellValue());
                             break;
-                        case 11:
+                        case 10:
                             candidate.setPermanentAddress(cell.getStringCellValue());
                             break;
-                        case 12:
+                        case 11:
                             candidate.setPanNumber(cell.getStringCellValue());
                             break;
-                        case 13:
+                        case 12:
                             candidate.setAadhaarNumber(cell.getStringCellValue());
                             break;
-                        case 14:
+                        case 13:
                             candidate.setFatherName(cell.getStringCellValue());
                             break;
-                        case 15:
+                        case 14:
                             candidate.setMotherName(cell.getStringCellValue());
                             break;
-                        case 16:
+                        case 15:
                             candidate.setDOB(cell.getStringCellValue());
                             break;
-                        case 17:
+                        case 16:
                             candidate.setCgpaUndergrad(cell.getNumericCellValue());
                             break;
-                        case 18:
+                        case 17:
                             candidate.setCgpaMasters(cell.getNumericCellValue());
                             break;
                         default:

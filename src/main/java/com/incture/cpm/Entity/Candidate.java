@@ -1,5 +1,6 @@
 package com.incture.cpm.Entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,12 +26,14 @@ public class Candidate {
     // @ManyToOne
     private String candidateCollege;
     private String department;
+
+    // @Column(unique = true, nullable = false)
     private String email;
     private String phoneNumber;
     private String alternateNumber;
     private double tenthPercent;
     private double twelthPercent;
-    private String marksheetsSemwise;
+    // private String marksheetsSemwise;
     private String currentLocation;
     private String permanentAddress;
     private String panNumber;
