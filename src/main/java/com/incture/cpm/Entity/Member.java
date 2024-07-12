@@ -2,6 +2,7 @@ package com.incture.cpm.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,6 +32,8 @@ public class Member {
     private String ekYear;
     private String role;
     private String skills;
+
+    @Column(columnDefinition = "INT")
     private int performanceRating;
 
     @JsonIgnore
