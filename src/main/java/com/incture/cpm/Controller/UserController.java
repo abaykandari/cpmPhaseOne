@@ -136,22 +136,12 @@ public class UserController {
 
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
             String jwt = jwtUtil.generateToken(userDetails.getUsername());
+            log.debug("Login successful with jwt : {}", jwt);
             return new ResponseEntity<>(jwt, HttpStatus.OK);
         }catch (Exception e){
             log.error("Exception occurred while createAuthenticationToken ", e);
             return new ResponseEntity<>("Incorrect username or password", HttpStatus.BAD_REQUEST);
         }
-        /* SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        String auth = email + ":" + password;
-        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Basic " + encodedAuth);
-        
-        User user = userService.findByEmail(email);
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(getUserDetails(user)); */
     } 
 
     @PostMapping("/registerAdmin")

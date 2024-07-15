@@ -28,5 +28,6 @@ public class History {
     @Column(nullable = false)
     private Date timestamp = new Date();
 
-    private String userName; 
+    @Column(nullable = false)
+    private String userName; // Person responsible for the change
 }

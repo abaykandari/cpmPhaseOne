@@ -13,10 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.incture.cpm.Dto.UnauthorizedUserWithHistory;
+import com.incture.cpm.Dto.UserDto;
 import com.incture.cpm.Entity.History;
 import com.incture.cpm.Entity.UnauthorizedUser;
 import com.incture.cpm.Entity.User;
-import com.incture.cpm.Repo.HistoryRepo;
 import com.incture.cpm.Repo.UnauthorizedUserRepo;
 import com.incture.cpm.Repo.UserRepository;
 
@@ -32,15 +32,22 @@ public class UnauthorizedUserService {
     @Autowired
     private JavaMailSender mailSender;
     @Autowired
-    private HistoryRepo historyRepo;
+    private HistoryService historyService;
 
     public List<UnauthorizedUserWithHistory> getAllRequests() {
         List<UnauthorizedUser> users = unauthorizedUserRepository.findAll();
         List<UnauthorizedUserWithHistory> userWithHistories = new ArrayList<>();
 
         for (UnauthorizedUser user : users) {
-            List<History> history = historyRepo.findByEntityIdAndEntityType(user.getId().toString(), "UnauthorizedUser");
-            userWithHistories.add(new UnauthorizedUserWithHistory(user, history));
+            UserDto userDto = new UserDto();
+            userDto.setId(user.getId());
+            userDto.setEmail(user.getEmail());
+            userDto.setRoles(user.getRoles());
+            userDto.setTalentName(user.getTalentName());
+            userDto.setInctureId(user.getInctureId());
+
+            List<History> history = historyService.getHistoryByEntityId(user.getId().toString(), "UnauthorizedUser");
+            userWithHistories.add(new UnauthorizedUserWithHistory(userDto, history));
         }
 
         return userWithHistories;
@@ -56,14 +63,13 @@ public class UnauthorizedUserService {
             userRepository.save(newUser);
             unauthorizedUser.setStatus("Approved");
             unauthorizedUserRepository.save(unauthorizedUser);
-
-            History historyEntry = new History();
-            historyEntry.setEntityId(unauthorizedUser.getId().toString());
-            historyEntry.setEntityType("UnauthorizedUser");
-            historyEntry.setLogEntry("Approved by: " + approver + " on " + new Date().toString());
-            historyEntry.setUserName(approver); 
-
-            historyRepo.save(historyEntry);
+            
+            historyService.logHistory(
+                unauthorizedUser.getId().toString(),
+                "UnauthorizedUser",
+                "Approved by: " + approver + " on " + new Date().toString(),
+                approver
+            );
 
             //sendStatusEmail(unauthorizedUser.getEmail(), "approved");
         } catch (Exception e) {
@@ -89,13 +95,12 @@ public class UnauthorizedUserService {
             unauthorizedUser.setStatus("Declined");
             unauthorizedUserRepository.save(unauthorizedUser);
 
-            History historyEntry = new History();
-            historyEntry.setEntityId(unauthorizedUser.getId().toString());
-            historyEntry.setEntityType("UnauthorizedUser");
-            historyEntry.setLogEntry("Declined by: " + decliner + " on " + new Date().toString());
-            historyEntry.setUserName(decliner); 
-
-            historyRepo.save(historyEntry);
+            historyService.logHistory(
+                unauthorizedUser.getId().toString(),
+                "UnauthorizedUser",
+                "Declined by: " + decliner + " on " + new Date().toString(),
+                decliner
+            );
             
             //sendStatusEmail(unauthorizedUser.getEmail(), "declined");
         } catch (Exception e) {
@@ -104,13 +109,10 @@ public class UnauthorizedUserService {
         }
     }
 
-    public void registerUser(String email, String password, Set<String> roles, String talentName, String inctureId) {
+    public void registerUser(String email, String password, Set<String> roles, String talentName, String inctureId) { // for super admin registration
         User user = new User();
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
-        /* Set<String> prefixedRoles = roles.stream()
-                                .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
-                                .collect(Collectors.toSet()); */
 
         user.setRoles(roles);
         user.setInctureId(inctureId);

@@ -8,18 +8,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.incture.cpm.Entity.History;
 import com.incture.cpm.Entity.Talent;
 import com.incture.cpm.Entity.UnauthorizedUser;
 import com.incture.cpm.Entity.User;
+import com.incture.cpm.Repo.HistoryRepo;
 import com.incture.cpm.Repo.TalentRepository;
 import com.incture.cpm.Repo.UnauthorizedUserRepo;
 import com.incture.cpm.Repo.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -32,14 +34,13 @@ public class UserService {
     private TalentRepository talentRepository;
     @Autowired
     private UnauthorizedUserRepo unauthorizedUserRepo; 
+    @Autowired
+    private HistoryService historyService;
     
     @Transactional
     public String registerUser(String email, String password, Set<String> roles, String talentName, String inctureId) {
         Optional<User> existingUser = userRepository.findByEmail(email);
         if(existingUser.isPresent()) throw new BadCredentialsException("User already exists for the given email");
-        /* Set<String> prefixedRoles = roles.stream()
-                                        .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
-                                        .collect(Collectors.toSet()); */
 
         Optional<Talent> talentOptional = talentRepository.findByEmail(email);
         if (email.endsWith("@incture.com") || talentOptional.isPresent()){       
@@ -47,7 +48,6 @@ public class UserService {
             user.setEmail(email);
             user.setPassword(passwordEncoder.encode(password));
             user.setTalentId(talentOptional.get().getTalentId());
-            //user.setRoles(prefixedRoles);
             user.setRoles(roles);
             user.setInctureId(inctureId);
             user.setTalentName(talentName);
@@ -56,16 +56,25 @@ public class UserService {
             return "User";
         } else{
             Optional<UnauthorizedUser> existingUnauthorizedUser = unauthorizedUserRepo.findByEmail(email);
-            if(existingUnauthorizedUser.isPresent()) throw new BadCredentialsException("User already exists for the given email");
-            UnauthorizedUser newUser = new UnauthorizedUser();
+            UnauthorizedUser newUser;
+
+            if(existingUnauthorizedUser.isPresent()) newUser = existingUnauthorizedUser.get();
+            else newUser = new UnauthorizedUser();
+            
             newUser.setEmail(email);
             newUser.setPassword(passwordEncoder.encode(password));
             newUser.setRoles(roles);
-            //newUser.setRoles(prefixedRoles);
             newUser.setInctureId(inctureId);
             newUser.setTalentName(talentName);
             newUser.setStatus("Pending");
             unauthorizedUserRepo.save(newUser);
+
+            historyService.logHistory(
+                newUser.getId().toString(),
+                "UnauthorizedUser",
+                "New User Access Request by: " + email + " on " + new Date().toString(),
+                email
+            );
 
             return "UnauthorizedUser";
         }
@@ -92,12 +101,6 @@ public class UserService {
         User user = userRepository.findByEmail(email)
            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         user.getRoles().add(newRole);
-
-        /* Set<String> prefixedRoles = user.getRoles().stream()
-            .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
-            .collect(Collectors.toSet());
-       
-        user.setRoles(prefixedRoles); */
         userRepository.save(user);
     }
 

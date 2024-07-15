@@ -30,6 +30,7 @@ public class Performance {
     private double assignmentScore;
     private double averageAttendance;
     private double assessmentScore;
+    
     private int punctuality;
     private int technicalProficiency;
     private int proactiveness;

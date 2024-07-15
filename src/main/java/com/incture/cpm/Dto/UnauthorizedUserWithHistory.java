@@ -3,7 +3,6 @@ package com.incture.cpm.Dto;
 import java.util.List;
 
 import com.incture.cpm.Entity.History;
-import com.incture.cpm.Entity.UnauthorizedUser;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -11,11 +10,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UnauthorizedUserWithHistory {
-    private UnauthorizedUser user;
+    private UserDto userDto;
     private List<History> history;    
 
-    public UnauthorizedUserWithHistory(UnauthorizedUser user, List<History> history) {
-        this.user = user;
+    public UnauthorizedUserWithHistory(UserDto userDto, List<History> history) {
+        this.userDto = userDto;
         this.history = history;
     }
 }
