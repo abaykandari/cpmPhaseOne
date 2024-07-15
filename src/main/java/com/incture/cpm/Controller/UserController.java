@@ -1,12 +1,11 @@
 package com.incture.cpm.Controller;
 
-import java.util.Base64;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,14 +27,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.incture.cpm.Dto.UserDto;
 import com.incture.cpm.Entity.User;
+import com.incture.cpm.Service.CustomUserDetailsService;
 import com.incture.cpm.Service.OtpService;
 import com.incture.cpm.Service.UserService;
+import com.incture.cpm.Util.JwtUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
  
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/security")
+@Slf4j
 public class UserController {
  
     @Autowired
@@ -45,6 +48,12 @@ public class UserController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @GetMapping("/")
     public String home() {
@@ -103,20 +112,47 @@ public class UserController {
                                           @RequestParam String password, @RequestParam String talentName, @RequestParam String inctureId, @RequestParam String otp) {
         System.out.println("Register endpoint hit with email: " + email);
         boolean isValid = true; //otpService.verifyOtp(email, otp);
+        
         if (isValid) {
-            String role = "USER";
             Set<String> roles = new HashSet<>();
-            roles.add(role.toUpperCase());
+            roles.add("USER");
+            
             String message = userService.registerUser(email, password, roles, talentName, inctureId);
-            if(message == "User")
-                return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED);
-            else if(message == "UnauthorizedUser")
-                return new ResponseEntity<>("User registered successfully", HttpStatus.I_AM_A_TEAPOT);
-            return new ResponseEntity<>("User non registered", HttpStatus.INTERNAL_SERVER_ERROR);
+            if(message == "User")                   return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED);
+            else if(message == "UnauthorizedUser")  return new ResponseEntity<>("User registered successfully", HttpStatus.I_AM_A_TEAPOT);
+            else                                    return new ResponseEntity<>("User non registered", HttpStatus.INTERNAL_SERVER_ERROR);
         } else {
             return ResponseEntity.badRequest().body("Invalid OTP.");
         }
     }
+
+    @PostMapping("/login")
+    public  ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
+        String email = credentials.get("email");
+        String password = credentials.get("password");
+        
+        try{
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+            String jwt = jwtUtil.generateToken(userDetails.getUsername());
+            return new ResponseEntity<>(jwt, HttpStatus.OK);
+        }catch (Exception e){
+            log.error("Exception occurred while createAuthenticationToken ", e);
+            return new ResponseEntity<>("Incorrect username or password", HttpStatus.BAD_REQUEST);
+        }
+        /* SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String auth = email + ":" + password;
+        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Basic " + encodedAuth);
+        
+        User user = userService.findByEmail(email);
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(getUserDetails(user)); */
+    } 
 
     @PostMapping("/registerAdmin")
     public ResponseEntity<?> registerAdmin(@RequestParam String email,
@@ -166,28 +202,6 @@ public class UserController {
         // Set other necessary fields
         return userDto;
     }
-
-    @PostMapping("/login")
-    public  ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
-        String email = credentials.get("email");
-        String password = credentials.get("password");
-        
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(email, password)
-        );
-        
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        String auth = email + ":" + password;
-        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Basic " + encodedAuth);
-        
-        User user = userService.findByEmail(email);
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(getUserDetails(user));
-    } 
 
     /* public ResponseEntity<?> loginUser(@RequestParam String email, @RequestParam String password) {
         try {

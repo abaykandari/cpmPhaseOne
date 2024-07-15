@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 
-import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -14,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
 import com.incture.cpm.Service.CustomUserDetailsService;
@@ -25,11 +25,13 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
     private final PasswordEncoder passwordEncoder;
+    private final JwtFilter jwtFilter;
 
     public SecurityConfig(CustomUserDetailsService customUserDetailsService, 
-                          PasswordEncoder passwordEncoder) {
+                          PasswordEncoder passwordEncoder, JwtFilter jwtFilter) {
         this.customUserDetailsService = customUserDetailsService;
         this.passwordEncoder = passwordEncoder;
+        this.jwtFilter = jwtFilter;
     }
 
     @Bean
@@ -58,7 +60,8 @@ public class SecurityConfig {
                         //.maximumSessions(1)
                         //.maxSessionsPreventsLogin(false))
                 //.userDetailsService(customUserDetailsService)
-                .httpBasic(withDefaults());
+                //.httpBasic(withDefaults());
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); 
         return http.build();
     }
 
