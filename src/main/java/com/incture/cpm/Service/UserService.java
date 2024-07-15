@@ -93,11 +93,11 @@ public class UserService {
            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         user.getRoles().add(newRole);
 
-        Set<String> prefixedRoles = user.getRoles().stream()
+        /* Set<String> prefixedRoles = user.getRoles().stream()
             .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
             .collect(Collectors.toSet());
        
-        user.setRoles(prefixedRoles);
+        user.setRoles(prefixedRoles); */
         userRepository.save(user);
     }
 
