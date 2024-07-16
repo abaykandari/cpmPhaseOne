@@ -1,5 +1,4 @@
 package com.incture.cpm.config;
-package com.incture.cpm.config;
 
 import java.util.Arrays;
 
@@ -51,44 +50,22 @@ public class SecurityConfig {
                     return config;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/security/", "/security/login", "/security/register", "/security/registerAdmin", "/super/security/register", "/security/generateOtp", "/security/forgotPassword").permitAll()
-                                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-                                .requestMatchers("/super/**").hasAuthority("ROLE_SUPERADMIN")
-                                .requestMatchers("/**").hasAnyAuthority("ROLE_USER")    //, "ROLE_ADMIN")
-                                .anyRequest().authenticated()
-                )
+                        .requestMatchers("/security/", "/security/login", "/security/register",
+                                "/security/registerAdmin", "/super/security/register", "/security/generateOtp",
+                                "/security/forgotPassword")
+                        .permitAll()
+                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/super/**").hasAuthority("ROLE_SUPERADMIN")
+                        .requestMatchers("/**").hasAnyAuthority("ROLE_USER") // , "ROLE_ADMIN")
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                        //.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
-                        //.maximumSessions(1)
-                        //.maxSessionsPreventsLogin(false))
-                //.userDetailsService(customUserDetailsService)
-                .httpBasic(withDefaults());
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(request -> {
-                    CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
-                    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
-                    config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
-                    config.setExposedHeaders(Arrays.asList("Authorization", "Content-Length", "X-Content-Range"));
-                    config.setAllowCredentials(true);
-                    return config;
-                }))
-                .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/security/", "/security/login", "/security/register", "/security/registerAdmin", "/super/security/register", "/security/generateOtp", "/security/forgotPassword").permitAll()
-                                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-                                .requestMatchers("/super/**").hasAuthority("ROLE_SUPERADMIN")
-                                .requestMatchers("/**").hasAnyAuthority("ROLE_USER")    //, "ROLE_ADMIN")
-                                .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                        //.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
-                        //.maximumSessions(1)
-                        //.maxSessionsPreventsLogin(false))
-                //.userDetailsService(customUserDetailsService)
-                //.httpBasic(withDefaults());
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); 
+                // .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                // .maximumSessions(1)
+                // .maxSessionsPreventsLogin(false))
+                // .userDetailsService(customUserDetailsService)
+                // .httpBasic(withDefaults());
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

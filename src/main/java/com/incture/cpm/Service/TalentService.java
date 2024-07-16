@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.incture.cpm.Dto.TalentSummaryDto;
-import com.incture.cpm.Dto.TalentSummaryDto;
 import com.incture.cpm.Entity.Candidate;
 import com.incture.cpm.Entity.Manager;
 import com.incture.cpm.Entity.Member;
@@ -49,7 +48,6 @@ public class TalentService {
             return null;
         }
         Talent newTalent = new Talent();
-        Talent newTalent = new Talent();
         newTalent.setCandidateId(candidate.getCandidateId());
         newTalent.setTalentName(candidate.getCandidateName());
         newTalent.setCollegeName(candidate.getCandidateCollege());
@@ -84,14 +82,9 @@ public class TalentService {
     }
 
     public Talent updateTalent(Talent talent, Long talentId) {
-
-    public Talent updateTalent(Talent talent, Long talentId) {
         Talent existingTalent = talentRepository.findById(talentId).orElse(null);
 
         if (existingTalent != null) {
-            talent.setTalentId(talentId);
-            talent.setCandidateId(existingTalent.getCandidateId());
-            return talentRepository.save(talent);
             talent.setTalentId(talentId);
             talent.setCandidateId(existingTalent.getCandidateId());
             return talentRepository.save(talent);
@@ -100,8 +93,6 @@ public class TalentService {
     }
 
     public boolean deleteTalent(Long talentId) {
-        Talent existingTalent = talentRepository.findById(talentId).orElse(null);
-        if (existingTalent != null) {
         Talent existingTalent = talentRepository.findById(talentId).orElse(null);
         if (existingTalent != null) {
             talentRepository.deleteById(talentId);
