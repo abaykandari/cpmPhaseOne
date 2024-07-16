@@ -34,4 +34,4 @@ build/
 
 ###ignore
 logs/
-src/main/java/resources/application.properties
+src/main/resources/application.properties
