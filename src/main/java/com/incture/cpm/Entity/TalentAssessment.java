@@ -1,6 +1,8 @@
 package com.incture.cpm.Entity;
 
+import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -26,10 +28,10 @@ public class TalentAssessment {
     private String assessmentType;
     private String assessmentSkill;
     private String location;
-    private double score;
+    private List<Double> scores;
     private int attempts;
+    @Column(columnDefinition = "TEXT")
     private String comments;
     private String assessmentDate;
 
-    
 }

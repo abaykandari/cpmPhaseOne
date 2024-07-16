@@ -1,11 +1,15 @@
 package com.incture.cpm.Service;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.incture.cpm.Entity.Attendance;
 import com.incture.cpm.Entity.Leaves;
@@ -34,6 +38,7 @@ public class AttendanceService {
         return attendanceRepo.findAll();
     }
 
+    @Transactional
     // used temporarily to save single attendance data
     public String addAttendance(Attendance attendance) {
         Talent existingTalent = talentRepo.findById(attendance.getTalentId()).orElseThrow(() -> new IllegalArgumentException("Talent not found"));
@@ -46,15 +51,26 @@ public class AttendanceService {
         performanceService.updateAttendanceScore(attendance.getTalentId());
         return "Attendance saved successfully";
     }
-
+    
+    @Transactional
     // used to approve regularization requests
     public String approveRegularize(Long regularizeId) {
         Regularize regularize = regularizeRepository.findById(regularizeId).orElseThrow(() -> new IllegalArgumentException("Regularization not found for given regularizationId"));
         Attendance originalAttendance = attendanceRepo.findByTalentIdAndDate(regularize.getTalentId(), regularize.getAttendanceDate()).orElseThrow(() -> new IllegalArgumentException("Attendance not found for given data"));
 
-        originalAttendance.setCheckin(regularize.getCheckin());
-        originalAttendance.setCheckout(regularize.getCheckout());
-        originalAttendance.setStatus("Present");
+        if(regularize.getReason() == "WFH") {
+            LocalTime originalCheckoutTime = LocalTime.parse(originalAttendance.getCheckout(), DateTimeFormatter.ofPattern("HH:mm:ss"));
+            LocalTime extraTime = LocalTime.parse(regularize.getExtraTime(), DateTimeFormatter.ofPattern("HH:mm:ss"));
+            LocalTime newCheckoutTime = originalCheckoutTime.plus(extraTime.getHour(), ChronoUnit.HOURS)
+                                                            .plus(extraTime.getMinute(), ChronoUnit.MINUTES)
+                                                            .plus(extraTime.getSecond(), ChronoUnit.SECONDS);
+            originalAttendance.setCheckout(newCheckoutTime.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+        }
+        else{
+            originalAttendance.setCheckin(regularize.getCheckin());
+            originalAttendance.setCheckout(regularize.getCheckout());
+            originalAttendance.setStatus("Present");
+        }
         attendanceRepo.save(originalAttendance);
         performanceService.updateAttendanceScore(originalAttendance.getTalentId());
         
@@ -64,6 +80,7 @@ public class AttendanceService {
         return "Attendance regularized successfully";
     }
 
+    @Transactional
     public String approveLeave(Leaves leave){
         Talent talent = talentRepo.findById(leave.getTalentId()).orElseThrow(() -> new IllegalArgumentException("Talent not found"));
 

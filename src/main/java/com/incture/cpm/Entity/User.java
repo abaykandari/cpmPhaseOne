@@ -2,14 +2,18 @@ package com.incture.cpm.Entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
  
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
+@NoArgsConstructor
+
 public class User {
 
     @Id
@@ -32,5 +36,14 @@ public class User {
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
     private Set<String> roles;
+
+    public User(UnauthorizedUser user) {
+        this.inctureId = user.getInctureId();
+        this.email = user.getEmail();
+        this.password = user.getPassword();
+        this.talentName = user.getTalentName();
+        
+        this.roles = new HashSet<>(user.getRoles());
+    }
 
 }

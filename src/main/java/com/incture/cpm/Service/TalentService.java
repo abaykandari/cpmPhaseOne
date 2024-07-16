@@ -5,8 +5,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.incture.cpm.Dto.TalentSummaryDto;
 import com.incture.cpm.Entity.Candidate;
 import com.incture.cpm.Entity.Talent;
+import com.incture.cpm.Exception.ResourceNotFoundException;
 import com.incture.cpm.Repo.TalentRepository;
 
 @Service
@@ -15,12 +17,12 @@ public class TalentService {
     @Autowired
     private TalentRepository talentRepository;
 
-    public Talent addTalentFromCandidate(Candidate candidate){
-        Talent existingtTalent=talentRepository.findByCandidateId(candidate.getCandidateId());
-        if(existingtTalent!=null){
+    public Talent addTalentFromCandidate(Candidate candidate) {
+        Talent existingtTalent = talentRepository.findByCandidateId(candidate.getCandidateId());
+        if (existingtTalent != null) {
             return null;
         }
-        Talent newTalent= new Talent();
+        Talent newTalent = new Talent();
         newTalent.setCandidateId(candidate.getCandidateId());
         newTalent.setTalentName(candidate.getCandidateName());
         newTalent.setCollegeName(candidate.getCandidateCollege());
@@ -54,25 +56,70 @@ public class TalentService {
         return talentRepository.findById(talentId).orElse(null);
     }
 
-    public Talent updateTalent(Talent talent,Long talentId) {
+    public Talent updateTalent(Talent talent, Long talentId) {
         Talent existingTalent = talentRepository.findById(talentId).orElse(null);
 
         if (existingTalent != null) {
-           talent.setTalentId(talentId);
-           talent.setCandidateId(existingTalent.getCandidateId());
-            return  talentRepository.save(talent);
+            talent.setTalentId(talentId);
+            talent.setCandidateId(existingTalent.getCandidateId());
+            return talentRepository.save(talent);
         }
         return null;
     }
 
     public boolean deleteTalent(Long talentId) {
-        Talent existingTalent= talentRepository.findById(talentId).orElse(null);
-        if(existingTalent!=null){
+        Talent existingTalent = talentRepository.findById(talentId).orElse(null);
+        if (existingTalent != null) {
             talentRepository.deleteById(talentId);
             return true;
         }
         return false;
     }
 
-    
+    // new added functionality
+
+    // This functionality is for resigned employees
+    public Talent resignTalent(Long talentId, String talentStatus, String exitReason, String exitDate,
+            String exitComment) {
+        Talent talent = talentRepository.findById(talentId).orElse(null);
+        if (talent == null) {
+            throw new ResourceNotFoundException("No Talent exists with given Talent Id");
+        }
+        if (talentStatus == "ACTIVE") {
+            talent.setTalentStatus(talentStatus);
+            talent.setExitReason("NA");
+            talent.setExitDate("NA");
+            talent.setExitComment("NA");
+        } else {
+            talent.setTalentStatus(talentStatus);
+            talent.setExitReason(exitReason);
+            talent.setExitDate(exitDate);
+            talent.setExitComment(exitComment);
+        }
+        return talentRepository.save(talent);
+    }
+
+    // FOR STATS OF TALENT TABLE
+
+    public TalentSummaryDto talentStats() {
+        long totalTalents = talentRepository.countTotalTalents();
+        long activeTalents = talentRepository.countActiveTalents();
+        long inactiveTalents = talentRepository.countInactiveTalents();
+        long declinedTalents = talentRepository.countDeclinedTalents();
+        long resignedTalents = talentRepository.countResignedTalents();
+        long revokedTalents = talentRepository.countRevokedTalents();
+        long talentLeftForBetterOffer = talentRepository.countBetterOfferTalents();
+        long talentLeftForHigherStudies = talentRepository.countHigherStudiesTalents();
+        long talentLeftForFamilyReasons = talentRepository.countFamilyReasonsTalents();
+        long talentLeftForHealthReasons = talentRepository.countHealthReasonsTalents();
+        long talentLeftForPerformanceIssues = talentRepository.countPerformanceIssuesTalents();
+        long talentLeftForOthers = talentRepository.countOtherReasonTalents();
+
+        TalentSummaryDto result = new TalentSummaryDto(totalTalents, activeTalents, inactiveTalents, declinedTalents,
+                resignedTalents, revokedTalents, talentLeftForBetterOffer, talentLeftForHigherStudies,
+                talentLeftForFamilyReasons,
+                talentLeftForHealthReasons, talentLeftForPerformanceIssues, talentLeftForOthers);
+        return result;
+    }
+
 }

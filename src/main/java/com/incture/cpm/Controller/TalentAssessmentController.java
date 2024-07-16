@@ -1,6 +1,7 @@
 package com.incture.cpm.Controller;
 
 import com.incture.cpm.Entity.TalentAssessment;
+import com.incture.cpm.Dto.TalentAssessmentDto;
 import com.incture.cpm.Entity.Talent;
 import com.incture.cpm.Service.TalentAssessmentService;
 import com.incture.cpm.helper.Helper;
@@ -21,6 +22,7 @@ public class TalentAssessmentController {
 
     @Autowired
     private TalentAssessmentService assessmentService;
+
     @GetMapping("/assementwiseview")
     public ResponseEntity<List<TalentAssessment>> getUniqueAssessments() {
         List<TalentAssessment> uniqueAssessments = assessmentService.getUniqueAssessments();
@@ -34,7 +36,7 @@ public class TalentAssessmentController {
     }
 
     @PostMapping("/addassessment")
-    public ResponseEntity<String> addAssessment(@RequestBody TalentAssessment assessment) {
+    public ResponseEntity<String> addAssessment(@RequestBody TalentAssessmentDto assessment) {
         String response = assessmentService.addAssessment(assessment);
         return ResponseEntity.ok(response);
     }
@@ -50,9 +52,9 @@ public class TalentAssessmentController {
     }
 
     @PutMapping("/updateassessment/{assessmentId}/{talentId}")
-    public ResponseEntity<TalentAssessment> updateAssessment(@PathVariable Long assessmentId, @PathVariable Long talentId,
-            @RequestBody TalentAssessment updatedAssessment) {
-        TalentAssessment assessment = assessmentService.updateAssessment(assessmentId, talentId, updatedAssessment);
+    public ResponseEntity<TalentAssessment> updateAssessment(@RequestParam Long assessmentId,
+            @RequestParam Long talentId, @RequestParam double score, @RequestParam String reason) {
+        TalentAssessment assessment = assessmentService.updateTalentAssessment(assessmentId, talentId, score, reason);
         if (assessment != null) {
             return ResponseEntity.ok(assessment);
         } else {
@@ -70,17 +72,19 @@ public class TalentAssessmentController {
         }
     }
 
-    //********************Uploading Excel file for Assessment Record*************************** */
+    // ********************Uploading Excel file for Assessment
+    // Record*************************** */
 
     @PostMapping("/uploadexcel")
-    public ResponseEntity<?> uploadExcelFile(@RequestPart MultipartFile file){
-        if(Helper.checkExcelFormat(file)){
-           String message= this.assessmentService.save(file);
+    public ResponseEntity<?> uploadExcelFile(@RequestPart MultipartFile file) {
+        if (Helper.checkExcelFormat(file)) {
+            String message = this.assessmentService.save(file);
 
             return ResponseEntity.ok(Map.of("message", message));
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please upload excel file ");
     }
+
     @GetMapping("/assessment/{assessmentId}")
     public ResponseEntity<List<TalentAssessment>> getAllAssessmentsByAssessmentId(@PathVariable Long assessmentId) {
         List<TalentAssessment> assessments = assessmentService.getAllAssessmentsByAssessmentId(assessmentId);
@@ -90,4 +94,4 @@ public class TalentAssessmentController {
             return ResponseEntity.notFound().build();
         }
     }
-    }
+}

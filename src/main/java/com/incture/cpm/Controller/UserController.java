@@ -1,12 +1,11 @@
 package com.incture.cpm.Controller;
 
-import java.util.Base64;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,20 +27,33 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.incture.cpm.Dto.UserDto;
 import com.incture.cpm.Entity.User;
+import com.incture.cpm.Service.CustomUserDetailsService;
+import com.incture.cpm.Service.OtpService;
 import com.incture.cpm.Service.UserService;
+import com.incture.cpm.Util.JwtUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
  
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/security")
+@Slf4j
 public class UserController {
+ 
+    @Autowired
+    private OtpService otpService;
  
     @Autowired
     private UserService userService;
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @GetMapping("/")
     public String home() {
@@ -73,16 +86,63 @@ public class UserController {
         return "Admin Content.";
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestParam String email,
-                                          @RequestParam String password, @RequestParam String talentName, @RequestParam String inctureId) {
-        System.out.println("Register endpoint hit with email: " + email);
-        String role = "USER";
-        Set<String> roles = new HashSet<>();
-        roles.add(role.toUpperCase());
-        userService.registerUser(email, password, roles, talentName, inctureId);
-        return ResponseEntity.ok("User registered successfully");
+    @GetMapping("/allOtp")
+    public Map<String, String> getOtpStore() {
+        return otpService.getOtpStore();
     }
+
+    @PostMapping("/generateOtp") //from /register
+    public ResponseEntity<String> generateOtp(@RequestParam String email) {
+        otpService.generateOtp(email);
+        return ResponseEntity.ok("OTP has been sent to your email.");
+    }
+
+    @PostMapping("/forgotPassword")
+    public ResponseEntity<String> forgotPassword(@RequestParam String email, @RequestParam String password, @RequestParam String otp) {
+        boolean isValid = otpService.verifyOtp(email, otp);
+        if (isValid) {
+            return userService.changePassword(email, password);
+        } else {
+            return ResponseEntity.badRequest().body("Invalid OTP.");
+        }   
+    }
+    
+    @PostMapping("/register") // registration with otp verification
+    public ResponseEntity<?> registerUser(@RequestParam String email,
+                                          @RequestParam String password, @RequestParam String talentName, @RequestParam String inctureId, @RequestParam String otp) {
+        System.out.println("Register endpoint hit with email: " + email);
+        boolean isValid = true; //otpService.verifyOtp(email, otp);
+        
+        if (isValid) {
+            Set<String> roles = new HashSet<>();
+            roles.add("USER");
+            
+            String message = userService.registerUser(email, password, roles, talentName, inctureId);
+            if(message == "User")                   return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED);
+            else if(message == "UnauthorizedUser")  return new ResponseEntity<>("User registered successfully", HttpStatus.I_AM_A_TEAPOT);
+            else                                    return new ResponseEntity<>("User non registered", HttpStatus.INTERNAL_SERVER_ERROR);
+        } else {
+            return ResponseEntity.badRequest().body("Invalid OTP.");
+        }
+    }
+
+    @PostMapping("/login")
+    public  ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
+        String email = credentials.get("email");
+        String password = credentials.get("password");
+        
+        try{
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+            String jwt = jwtUtil.generateToken(userDetails.getUsername());
+            log.debug("Login successful with jwt : {}", jwt);
+            return new ResponseEntity<>(jwt, HttpStatus.OK);
+        }catch (Exception e){
+            log.error("Exception occurred while createAuthenticationToken ", e);
+            return new ResponseEntity<>("Incorrect username or password", HttpStatus.BAD_REQUEST);
+        }
+    } 
 
     @PostMapping("/registerAdmin")
     public ResponseEntity<?> registerAdmin(@RequestParam String email,
@@ -92,7 +152,7 @@ public class UserController {
         roles.add("ADMIN".toUpperCase());
         roles.add("USER".toUpperCase());
         userService.registerUser(email, password, roles, talentName, inctureId);
-        return ResponseEntity.ok("User registered successfully");
+        return ResponseEntity.ok("Admin registered successfully");
     }
 
     @PostMapping("/addRole")
@@ -100,6 +160,18 @@ public class UserController {
     public ResponseEntity<?> addRole(@RequestParam String email, @RequestParam String role){
         try { 
             userService.addRole(email, role);
+            return ResponseEntity.ok("Role added successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
+    @PostMapping("/changePassword")
+    public ResponseEntity<?> changePassword(@RequestParam String password){
+        try { 
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String email = authentication.getName();
+            userService.changePassword(email, password);
             return ResponseEntity.ok("Role added successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
@@ -121,34 +193,6 @@ public class UserController {
         return userDto;
     }
 
-    @PostMapping("/login")
-    public  ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
-        String email = credentials.get("email");
-        String password = credentials.get("password");
-        
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(email, password)
-        );
-        
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        // Combine email and password
-        String auth = email + ":" + password;
-        
-        // Encode to Base64
-        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
-        
-        // Create Authorization header
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Basic " + encodedAuth);
-        
-        // Here you would typically validate the credentials and generate a response
-        // For this example, we're just returning a success message
-        User user = userService.findByEmail(email);
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(getUserDetails(user));
-    } 
     /* public ResponseEntity<?> loginUser(@RequestParam String email, @RequestParam String password) {
         try {
             Authentication authentication = authenticationManager.authenticate(

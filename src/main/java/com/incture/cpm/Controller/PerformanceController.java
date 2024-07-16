@@ -52,6 +52,7 @@ public class PerformanceController {
     }
 
     @PostMapping("/updatePerformance")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> updatePerformance(@RequestBody Performance performance) {
         if (performance == null) {
             throw new BadRequestException("Performance data is required.");
@@ -67,6 +68,7 @@ public class PerformanceController {
     }
 
     @PostMapping("/addPerformanceByList")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> addPerformanceByList(@RequestBody List<Performance> performanceList) {
         if (performanceList == null || performanceList.isEmpty()) {
             throw new BadRequestException("Performance list is required.");
@@ -80,6 +82,7 @@ public class PerformanceController {
     }
 
     @PostMapping("/updateFeedback")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> updateFeedback(@RequestBody Performance performance) {
         if (performance == null) {
             throw new BadRequestException("Performance data is required.");
@@ -95,6 +98,7 @@ public class PerformanceController {
     }
 
     @DeleteMapping("/deletePerformance")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> deletePerformance(@RequestBody Performance performance) {
         if (performance == null) {
             throw new BadRequestException("Performance data is required.");
@@ -110,6 +114,7 @@ public class PerformanceController {
     }
 
     @DeleteMapping("/deletePerformanceById")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> deletePerformance(@RequestParam Long talentId) {
         if (talentId == null) {
             throw new BadRequestException("Talent ID is required.");

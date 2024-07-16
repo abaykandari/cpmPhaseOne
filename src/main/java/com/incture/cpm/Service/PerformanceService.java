@@ -1,5 +1,6 @@
 package com.incture.cpm.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,19 +35,21 @@ public class PerformanceService {
     @Autowired
     AttendanceRepo attendanceRepo;
 
-    public List<Performance> getAllPerformances(){
+    public List<Performance> getAllPerformances() {
         return performanceRepo.findAll();
     }
-    
+
     public Performance getPerformanceById(Long talentId) {
         return performanceRepo.findById(talentId).get();
     }
 
-    //to be removed latern on
+    // to be removed latern on
     public String updatePerformance(Performance performance) {
-        Talent existingTalent = talentRepository.findById(performance.getTalentId()).orElseThrow(() -> new IllegalArgumentException("Talent not found"));
-        
-        performanceRepo.findById(performance.getTalentId()).orElseThrow(() -> new IllegalArgumentException("Performance not found"));
+        Talent existingTalent = talentRepository.findById(performance.getTalentId())
+                .orElseThrow(() -> new IllegalArgumentException("Talent not found"));
+
+        performanceRepo.findById(performance.getTalentId())
+                .orElseThrow(() -> new IllegalArgumentException("Performance not found"));
 
         performance.setTalentName(existingTalent.getTalentName());
         performance.setEkYear(existingTalent.getEkYear());
@@ -58,7 +61,7 @@ public class PerformanceService {
         return "Performance updated successfully";
     }
 
-    public String addPerformanceWithTalent(Talent talent){
+    public String addPerformanceWithTalent(Talent talent) {
         Performance performance = new Performance();
 
         performance.setTalentId(talent.getTalentId());
@@ -70,8 +73,9 @@ public class PerformanceService {
         return "Performance created successfully";
     }
 
-    public String editTalentDetails(Talent talent){
-        Performance existingPerformance = performanceRepo.findById(talent.getTalentId()).orElseThrow(() -> new IllegalStateException("Performance not found for given talent"));
+    public String editTalentDetails(Talent talent) {
+        Performance existingPerformance = performanceRepo.findById(talent.getTalentId())
+                .orElseThrow(() -> new IllegalStateException("Performance not found for given talent"));
 
         existingPerformance.setTalentName(talent.getTalentName());
         existingPerformance.setEkYear(talent.getEkYear());
@@ -81,25 +85,27 @@ public class PerformanceService {
     }
 
     public void updateFeedback(Performance performance) {
-        Performance existingPerformance = performanceRepo.findById(performance.getTalentId()).orElseThrow(() -> new IllegalStateException("Performance not found for given id"));
+        Performance existingPerformance = performanceRepo.findById(performance.getTalentId())
+                .orElseThrow(() -> new IllegalStateException("Performance not found for given id"));
 
         existingPerformance.setAssessmentScore(performance.getAssessmentScore());
         existingPerformance.setAssignmentScore(performance.getAssignmentScore());
         existingPerformance.setAverageAttendance(performance.getAverageAttendance());
-        
+
         existingPerformance.setPunctuality(performance.getPunctuality());
         existingPerformance.setTechnicalProficiency(performance.getTechnicalProficiency());
         existingPerformance.setProactiveness(performance.getProactiveness());
         existingPerformance.setTimeliness(performance.getTimeliness());
-        
+
         performanceRepo.save(existingPerformance);
     }
 
-    public String updateAssignmentScore(String email){
-        try 
-        {
-            Talent talent = talentRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Could not find talent"));
-            List<EmployeewiseAssignment> assignmentList = employeewiseAssignmentRepo.findByEmployeeEmail(email).orElseThrow(() -> new IllegalArgumentException("No record found for talent"));
+    public String updateAssignmentScore(String email) {
+        try {
+            Talent talent = talentRepository.findByEmail(email)
+                    .orElseThrow(() -> new IllegalArgumentException("Could not find talent"));
+            List<EmployeewiseAssignment> assignmentList = employeewiseAssignmentRepo.findByEmployeeEmail(email)
+                    .orElseThrow(() -> new IllegalArgumentException("No record found for talent"));
             double sum = 0.0;
             int n = 0;
             for (EmployeewiseAssignment assignment : assignmentList) {
@@ -107,7 +113,7 @@ public class PerformanceService {
                 n += 1;
             }
             Performance performance = performanceRepo.findById(talent.getTalentId()).get();
-            performance.setAssignmentScore(sum/n);
+            performance.setAssignmentScore(sum / n);
             performanceRepo.save(performance);
             return "Assignment score updated successfully.";
         } catch (IllegalArgumentException e) {
@@ -115,63 +121,66 @@ public class PerformanceService {
         } catch (Exception e) {
             return "An unexpected error occurred: " + e.getMessage();
         }
-    } 
+    }
 
-    public String updateAssessmentScore(Long talentId){
+    public String updateAssessmentScore(Long talentId) {
         try {
-            List<TalentAssessment> talentAssessmentList = talentAssessmentRepo.findAllByTalentId(talentId).orElseThrow(() -> new IllegalArgumentException("Could not find talent"));
+            List<TalentAssessment> talentAssessmentList = talentAssessmentRepo.findAllByTalentId(talentId)
+                    .orElseThrow(() -> new IllegalArgumentException("Could not find talent"));
             double sum = 0.0;
             int n = 0;
             for (TalentAssessment talentAssessment : talentAssessmentList) {
-                sum += talentAssessment.getScore();
+                sum += Collections.max(talentAssessment.getScores());
                 n += 1;
             }
             Performance performance = performanceRepo.findById(talentId).get();
-            performance.setAssessmentScore(sum/n);
-            performanceRepo.save(performance); 
+            performance.setAssessmentScore(sum / n);
+            performanceRepo.save(performance);
             return "Assessment score updated successfully.";
         } catch (IllegalArgumentException e) {
             return "Error: " + e.getMessage();
         } catch (Exception e) {
             return "An unexpected error occurred: " + e.getMessage();
-        }  
-    } 
-
-        public String updateAttendanceScore(Long talentId){
-            try{
-                List<Attendance> attendanceList = attendanceRepo.findByTalentId(talentId).orElseThrow(() -> new IllegalArgumentException("Could not find Attendane"));
-                int absentDays = 0, presentDays = 0;
-                for (Attendance attendance : attendanceList) {
-                    if ("Present".equalsIgnoreCase(attendance.getStatus())) {
-                        presentDays++;
-                    } else if ("Absent".equalsIgnoreCase(attendance.getStatus()) || "On Leave".equalsIgnoreCase(attendance.getStatus())) {
-                        absentDays++;
-                    }
-                }
-                Performance performance = performanceRepo.findById(talentId).get();
-                performance.setAverageAttendance((presentDays * 100) / (double) (presentDays + absentDays));
-                performanceRepo.save(performance); 
-                return "Assignment score updated successfully.";
-            } catch (IllegalArgumentException e) {
-                return "Error: " + e.getMessage();
-            } catch (Exception e) {
-                return "An unexpected error occurred: " + e.getMessage();
-            }
         }
+    }
+
+    public String updateAttendanceScore(Long talentId) {
+        try {
+            List<Attendance> attendanceList = attendanceRepo.findByTalentId(talentId)
+                    .orElseThrow(() -> new IllegalArgumentException("Could not find Attendane"));
+            int absentDays = 0, presentDays = 0;
+            for (Attendance attendance : attendanceList) {
+                if ("Present".equalsIgnoreCase(attendance.getStatus())) {
+                    presentDays++;
+                } else if ("Absent".equalsIgnoreCase(attendance.getStatus())
+                        || "On Leave".equalsIgnoreCase(attendance.getStatus())) {
+                    absentDays++;
+                }
+            }
+            Performance performance = performanceRepo.findById(talentId).get();
+            performance.setAverageAttendance((presentDays * 100) / (double) (presentDays + absentDays));
+            performanceRepo.save(performance);
+            return "Assignment score updated successfully.";
+        } catch (IllegalArgumentException e) {
+            return "Error: " + e.getMessage();
+        } catch (Exception e) {
+            return "An unexpected error occurred: " + e.getMessage();
+        }
+    }
 
     public void deletePerformance(Performance performance) {
         Optional<Performance> existingPerformance = performanceRepo.findById(performance.getTalentId());
-        if (existingPerformance.isEmpty()) 
+        if (existingPerformance.isEmpty())
             throw new IllegalArgumentException("Performance with ID " + performance.getTalentId() + " does not exist.");
 
         performanceRepo.delete(performance);
     }
 
-    public void deletePerformance(Long talentId){
+    public void deletePerformance(Long talentId) {
         Optional<Performance> existingPerformance = performanceRepo.findById(talentId);
-        if (existingPerformance.isEmpty()) 
+        if (existingPerformance.isEmpty())
             throw new IllegalArgumentException("Performance with ID " + talentId + " does not exist.");
-        
+
         performanceRepo.deleteById(talentId);
     }
 

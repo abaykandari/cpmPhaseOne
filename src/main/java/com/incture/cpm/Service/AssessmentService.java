@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.incture.cpm.Entity.Assessment;
@@ -17,9 +18,11 @@ import com.incture.cpm.Entity.AssessmentLevelFour;
 import com.incture.cpm.Entity.AssessmentLevelOne;
 import com.incture.cpm.Entity.AssessmentLevelThree;
 import com.incture.cpm.Entity.AssessmentLevelTwo;
+import com.incture.cpm.Entity.AssessmentLevelFinal;
 import com.incture.cpm.Entity.Candidate;
 import com.incture.cpm.Repo.AssessmentRepo;
 import com.incture.cpm.Repo.CandidateRepository;
+import com.incture.cpm.Repo.CollegeRepository;
 
 @Service
 public class AssessmentService {
@@ -32,35 +35,32 @@ public class AssessmentService {
     @Autowired
     TalentService talentService;
 
+    @Autowired
+    CollegeRepository collegeRepository;
+
     public Object getAllAssessments() {
         return assessmentRepo.findAll();
     }
 
-    public AssessmentLevelOne createLevelOne(AssessmentLevelOne assessmentLevelOne) {
-        String email = assessmentLevelOne.getEmail();
-        candidateRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Candidate with provided email not found"));
-
-        Assessment assessment = new Assessment();
-        assessment.setEmail(email);
-        assessment.setCandidateName(assessmentLevelOne.getCandidateName());
-        assessment.setAssessmentLevelOne(assessmentLevelOne);
-        assessmentLevelOne.updateTotalScore();
-        assessmentRepo.save(assessment);
-
-        return assessmentLevelOne;
+    public List<Assessment> getAssessmentByCollegeId(int collegeId) {
+        return assessmentRepo.findAllByCollege(collegeRepository.findById(collegeId).
+                                orElseThrow(() -> new IllegalArgumentException("No College Found For id :" + collegeId)))
+                                .orElseThrow(() -> new IllegalArgumentException("Assessment for given college not found"));
     }
 
-    public String createAssessment(AssessmentLevelOne assessmentLevelOne) {
+    @Transactional
+    public String createAssessment(AssessmentLevelOne assessmentLevelOne, int collegeId) {
         String email = assessmentLevelOne.getEmail();
-        candidateRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Candidate with provided email not found"));
+        candidateRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Candidate with provided email not found for email " + email));
 
         Assessment assessment = new Assessment();
         assessment.setEmail(email);
         assessment.setCandidateName(assessmentLevelOne.getCandidateName());
         assessment.setAssessmentLevelOne(assessmentLevelOne);
         assessmentLevelOne.updateTotalScore();
+        assessment.setCollege(collegeRepository.findById(collegeId).orElseThrow(() -> new IllegalArgumentException("College not found college id: " + collegeId)));
         assessmentRepo.save(assessment);
-
+        
         return "Assessment Level One saved successfully";
     }
 
@@ -110,7 +110,8 @@ public class AssessmentService {
         return "Assessment Level Five updated successfully";
     }
 
-    public void save(MultipartFile file) {
+    @Transactional
+    public void save(MultipartFile file, int collegeId) {
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
             for (Row row : sheet) {
@@ -123,14 +124,15 @@ public class AssessmentService {
                 assessmentLevelOne.setLogicalScore((int) row.getCell(3).getNumericCellValue());
                 assessmentLevelOne.setVerbalScore((int) row.getCell(4).getNumericCellValue());
                 assessmentLevelOne.setCodingScore((int) row.getCell(5).getNumericCellValue());
-            
-                createAssessment(assessmentLevelOne);
+                    
+                createAssessment(assessmentLevelOne, collegeId);
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to parse Excel file: " + e.getMessage());
         }
     }
 
+    @Transactional
     public String selectLevelOne(List<AssessmentLevelOne> levelOneSelectedList) {
         for (AssessmentLevelOne levelOneSelected : levelOneSelectedList) {
             try {
@@ -149,6 +151,7 @@ public class AssessmentService {
         return "Assessment Level Two saved successfully";
     }
 
+    @Transactional
     public String selectLevelTwo(List<AssessmentLevelTwo> levelTwoSelectedList) {
         for (AssessmentLevelTwo levelTwoSelected : levelTwoSelectedList) {
             try {
@@ -167,6 +170,7 @@ public class AssessmentService {
         return "Assessment Level Three saved successfully";
     }
 
+    @Transactional
     public String selectLevelThree(List<AssessmentLevelThree> levelThreeSelectedList) {
         for (AssessmentLevelThree levelThreeSelected : levelThreeSelectedList) {
             try {
@@ -185,6 +189,7 @@ public class AssessmentService {
         return "Assessment Level Four saved successfully";
     }
 
+    @Transactional
     public String selectLevelFour(List<AssessmentLevelFour> levelFourSelectedList) {
         for (AssessmentLevelFour levelFourSelected : levelFourSelectedList) {
             try {
@@ -203,9 +208,19 @@ public class AssessmentService {
         return "Assessment Level Five saved successfully";
     }
 
+    @Transactional
     public String selectLevelFive(List<AssessmentLevelFive> levelFiveSelectedList) {
         for (AssessmentLevelFive levelFiveSelected : levelFiveSelectedList) {
             try {
+                Assessment assessment = assessmentRepo.findByEmail(levelFiveSelected.getEmail()).orElseThrow(() -> new IllegalArgumentException("Could not find assessment with the provided email"));
+                if (assessment.getAssessmentLevelFinal() == null) {
+                    assessment.setAssessmentLevelFinal(new AssessmentLevelFinal());
+                    assessment.getAssessmentLevelFinal().setEmail(levelFiveSelected.getEmail());
+                    assessment.getAssessmentLevelFinal().setCandidateName(levelFiveSelected.getCandidateName());
+                    assessmentRepo.save(assessment);
+                }
+                else throw new IllegalStateException("Candidate already selected");
+
                 Candidate candidate = candidateRepository.findByEmail(levelFiveSelected.getEmail()).get();
                 talentService.addTalentFromCandidate(candidate); // convert to talent
             } catch (IllegalArgumentException e) {
@@ -214,4 +229,5 @@ public class AssessmentService {
         }
         return "Candidates selected successfully";
     }
+
 }

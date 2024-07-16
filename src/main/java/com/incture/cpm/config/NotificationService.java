@@ -1,4 +1,4 @@
-package com.incture.cpm.Config;
+package com.incture.cpm.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;

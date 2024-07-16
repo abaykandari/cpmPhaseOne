@@ -18,7 +18,7 @@ public class TrainerService {
         return trainerRepository.findAll();
     }
  
-    public Optional<Trainer> getTrainerById(Long trainerId) {
+    public Optional<Trainer> getTrainerById(String trainerId) {
         return trainerRepository.findById(trainerId);
     }
  
@@ -26,13 +26,13 @@ public class TrainerService {
         return trainerRepository.save(trainer);
     }
  
-    public Trainer updateTrainer(Long trainerId, Trainer trainerDetails) {
-        Trainer trainer = trainerRepository.findById(trainerId).orElseThrow(() -> new RuntimeException("Trainer not found"));
+    public Trainer updateTrainer(String trainerId, Trainer trainerDetails) {
+        trainerRepository.findById(trainerId).orElseThrow(() -> new RuntimeException("Trainer not found"));
         trainerDetails.setTrainerId(trainerId);
         return trainerRepository.save(trainerDetails);
     }
  
-    public void deleteTrainer(Long trainerId) {
+    public void deleteTrainer(String trainerId) {
         Trainer trainer = trainerRepository.findById(trainerId).orElseThrow(() -> new RuntimeException("Trainer not found"));
         trainerRepository.delete(trainer);
     }

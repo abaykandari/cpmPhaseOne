@@ -23,7 +23,7 @@ public class TrainerController {
     }
  
     @GetMapping("/{trainerId}")
-    public ResponseEntity<Trainer> getTrainerById(@PathVariable Long trainerId) {
+    public ResponseEntity<Trainer> getTrainerById(@PathVariable String trainerId) {
         Optional<Trainer> trainer = trainerService.getTrainerById(trainerId);
         if (trainer.isPresent()) {
             return ResponseEntity.ok(trainer.get());
@@ -38,7 +38,7 @@ public class TrainerController {
     }
  
     @PutMapping("/update/{trainerId}")
-    public ResponseEntity<Trainer> updateTrainer(@PathVariable Long trainerId, @RequestBody Trainer trainerDetails) {
+    public ResponseEntity<Trainer> updateTrainer(@PathVariable String trainerId, @RequestBody Trainer trainerDetails) {
         try {
             Trainer updatedTrainer = trainerService.updateTrainer(trainerId, trainerDetails);
             return ResponseEntity.ok(updatedTrainer);
@@ -48,7 +48,7 @@ public class TrainerController {
     }
  
     @DeleteMapping("/delete/{trainerId}")
-    public ResponseEntity<Void> deleteTrainer(@PathVariable Long trainerId) {
+    public ResponseEntity<Void> deleteTrainer(@PathVariable String trainerId) {
         try {
             trainerService.deleteTrainer(trainerId);
             return ResponseEntity.noContent().build();

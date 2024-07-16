@@ -28,7 +28,7 @@ public class AcademicInternsController {
     private AcademicInternsService csvService;
  
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadCSVFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadCSVFile(@RequestParam MultipartFile file) {
         // Check if the file is empty
         if (file.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File is empty");
@@ -53,7 +53,7 @@ public class AcademicInternsController {
     }
  
     @GetMapping("/getAttendanceByDate")
-    public ResponseEntity<Optional<List<AcademicInterns>>> getAttendanceByDate(@RequestParam("date") String date) {
+    public ResponseEntity<Optional<List<AcademicInterns>>> getAttendanceByDate(@RequestParam String date) {
         Optional<List<AcademicInterns>> attendanceList = csvService.getAttendanceByDate(date);
  
         if (attendanceList.isPresent()) {
@@ -64,7 +64,7 @@ public class AcademicInternsController {
     }
  
     @PutMapping("/updateAttendanceById/{id}")
-    public ResponseEntity<AcademicInterns> updateAttendance(@PathVariable("id") Long id, @RequestBody AcademicInterns updatedAttendance) {
+    public ResponseEntity<AcademicInterns> updateAttendance(@PathVariable Long id, @RequestBody AcademicInterns updatedAttendance) {
         Optional<AcademicInterns> existingAttendanceOptional = csvService.getAttendanceById(id);
         if (existingAttendanceOptional.isPresent()) {
             AcademicInterns updatedRecord = csvService.updateAttendance(id, updatedAttendance);

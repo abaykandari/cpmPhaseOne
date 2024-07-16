@@ -1,5 +1,7 @@
 package com.incture.cpm.Entity;
 
+import java.sql.Blob;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,4 +32,7 @@ public class Leaves {
 
     private String subject;
     private String description;
+    private String reasonForReject;
+
+    private Blob reasonFile;
 }

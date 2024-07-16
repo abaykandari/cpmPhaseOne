@@ -29,7 +29,7 @@ public class CandidateController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Candidate> getCandidateById(@PathVariable(value = "id") Long id) {
+    public ResponseEntity<Candidate> getCandidateById(@PathVariable Long id) {
         Candidate candidate = candidateService.getCandidateById(id);
         if (candidate == null) {
             return ResponseEntity.notFound().build();
@@ -43,7 +43,7 @@ public class CandidateController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Candidate> updateCandidate(@PathVariable(value = "id") Long id, @RequestBody Candidate candidateDetails) {
+    public ResponseEntity<Candidate> updateCandidate(@PathVariable Long id, @RequestBody Candidate candidateDetails) {
         Candidate updatedCandidate = candidateService.updateCandidate(id, candidateDetails);
         if (updatedCandidate == null) {
             return ResponseEntity.notFound().build();
@@ -52,7 +52,7 @@ public class CandidateController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteCandidate(@PathVariable(value = "id") Long id) {
+    public ResponseEntity<String> deleteCandidate(@PathVariable Long id) {
         candidateService.deleteCandidate(id);
         return ResponseEntity.ok()
         .body("deleted successfully");
@@ -62,7 +62,7 @@ public class CandidateController {
 
     @PostMapping("/upload")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> upload(@RequestParam MultipartFile file) {
         if (Helper.checkExcelFormat(file)) {
             //true
 
