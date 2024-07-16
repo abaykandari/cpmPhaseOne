@@ -19,7 +19,6 @@ import com.incture.cpm.Dto.UnauthorizedUserWithHistory;
 import com.incture.cpm.Service.UnauthorizedUserService;
 import org.springframework.web.bind.annotation.GetMapping;
 
-
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/super/security")
@@ -30,12 +29,12 @@ public class UnauthorizedUserController {
 
     @GetMapping("/getAllRequests")
     public List<UnauthorizedUserWithHistory> getAllRequests() {
-        return unauthorizedUserService.getAllRequests(); 
+        return unauthorizedUserService.getAllRequests();
     }
-    
+
     @PostMapping("/register")
     public ResponseEntity<?> registerSuperAdmin(@RequestParam String email,
-                                          @RequestParam String password, @RequestParam String talentName, @RequestParam String inctureId) {
+            @RequestParam String password, @RequestParam String talentName, @RequestParam String inctureId) {
         System.out.println("Register endpoint hit with email: " + email);
         Set<String> roles = new HashSet<>();
         roles.add("ADMIN".toUpperCase());

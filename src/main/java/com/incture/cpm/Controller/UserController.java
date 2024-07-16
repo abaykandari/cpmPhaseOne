@@ -33,16 +33,16 @@ import com.incture.cpm.Service.UserService;
 import com.incture.cpm.Util.JwtUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
- 
+
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/security")
 @Slf4j
 public class UserController {
- 
+
     @Autowired
     private OtpService otpService;
- 
+
     @Autowired
     private UserService userService;
 
@@ -59,7 +59,7 @@ public class UserController {
     public String home() {
         return "Welcome to the home page!";
     }
- 
+
     @GetMapping("/user")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> userAccess() {
@@ -70,7 +70,7 @@ public class UserController {
             System.out.println("Principal: " + authentication.getPrincipal());
             System.out.println("Authorities: " + authentication.getAuthorities());
         }
-        
+
         if (authentication != null && authentication.isAuthenticated()) {
             String email = authentication.getName();
             User user = userService.findByEmail(email);
@@ -79,7 +79,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
         }
     }
- 
+
     @GetMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
     public String adminAccess() {
@@ -91,62 +91,67 @@ public class UserController {
         return otpService.getOtpStore();
     }
 
-    @PostMapping("/generateOtp") //from /register
+    @PostMapping("/generateOtp") // from /register
     public ResponseEntity<String> generateOtp(@RequestParam String email) {
         otpService.generateOtp(email);
         return ResponseEntity.ok("OTP has been sent to your email.");
     }
 
     @PostMapping("/forgotPassword")
-    public ResponseEntity<String> forgotPassword(@RequestParam String email, @RequestParam String password, @RequestParam String otp) {
+    public ResponseEntity<String> forgotPassword(@RequestParam String email, @RequestParam String password,
+            @RequestParam String otp) {
         boolean isValid = otpService.verifyOtp(email, otp);
         if (isValid) {
             return userService.changePassword(email, password);
         } else {
             return ResponseEntity.badRequest().body("Invalid OTP.");
-        }   
+        }
     }
-    
+
     @PostMapping("/register") // registration with otp verification
     public ResponseEntity<?> registerUser(@RequestParam String email,
-                                          @RequestParam String password, @RequestParam String talentName, @RequestParam String inctureId, @RequestParam String otp) {
+            @RequestParam String password, @RequestParam String talentName, @RequestParam String inctureId,
+            @RequestParam String otp) {
         System.out.println("Register endpoint hit with email: " + email);
-        boolean isValid = true; //otpService.verifyOtp(email, otp);
-        
+        boolean isValid = true; // otpService.verifyOtp(email, otp);
+
         if (isValid) {
             Set<String> roles = new HashSet<>();
             roles.add("USER");
-            
+
             String message = userService.registerUser(email, password, roles, talentName, inctureId);
-            if(message == "User")                   return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED);
-            else if(message == "UnauthorizedUser")  return new ResponseEntity<>("User registered successfully", HttpStatus.I_AM_A_TEAPOT);
-            else                                    return new ResponseEntity<>("User non registered", HttpStatus.INTERNAL_SERVER_ERROR);
+            if (message == "User")
+                return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED);
+            else if (message == "UnauthorizedUser")
+                return new ResponseEntity<>("User registered successfully", HttpStatus.I_AM_A_TEAPOT);
+            else
+                return new ResponseEntity<>("User non registered", HttpStatus.INTERNAL_SERVER_ERROR);
         } else {
             return ResponseEntity.badRequest().body("Invalid OTP.");
         }
     }
 
     @PostMapping("/login")
-    public  ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
         String email = credentials.get("email");
         String password = credentials.get("password");
-        
-        try{
+
+        try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
 
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
             String jwt = jwtUtil.generateToken(userDetails.getUsername());
             log.debug("Login successful with jwt : {}", jwt);
             return new ResponseEntity<>(jwt, HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("Exception occurred while createAuthenticationToken ", e);
             return new ResponseEntity<>("Incorrect username or password", HttpStatus.BAD_REQUEST);
         }
-    } 
+    }
 
     @PostMapping("/registerAdmin")
     public ResponseEntity<?> registerAdmin(@RequestParam String email,
-                                          @RequestParam String password, @RequestParam String talentName, @RequestParam String inctureId) {
+            @RequestParam String password, @RequestParam String talentName, @RequestParam String inctureId) {
         System.out.println("Register endpoint hit with email: " + email);
         Set<String> roles = new HashSet<>();
         roles.add("ADMIN".toUpperCase());
@@ -157,8 +162,8 @@ public class UserController {
 
     @PostMapping("/addRole")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> addRole(@RequestParam String email, @RequestParam String role){
-        try { 
+    public ResponseEntity<?> addRole(@RequestParam String email, @RequestParam String role) {
+        try {
             userService.addRole(email, role);
             return ResponseEntity.ok("Role added successfully");
         } catch (Exception e) {
@@ -167,8 +172,8 @@ public class UserController {
     }
 
     @PostMapping("/changePassword")
-    public ResponseEntity<?> changePassword(@RequestParam String password){
-        try { 
+    public ResponseEntity<?> changePassword(@RequestParam String password) {
+        try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
             userService.changePassword(email, password);
@@ -188,31 +193,37 @@ public class UserController {
         userDto.setTalentId(user.getTalentId());
         userDto.setTalentName(user.getTalentName());
         userDto.setInctureId(user.getInctureId());
-        
+
         // Set other necessary fields
         return userDto;
     }
 
-    /* public ResponseEntity<?> loginUser(@RequestParam String email, @RequestParam String password) {
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, password)
-            );
-            
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            
-            System.out.println("User authenticated: " + authentication.isAuthenticated());
-            System.out.println("Authentication principal: " + authentication.getPrincipal());
-            
-            User user = userService.findByEmail(email);
-            return new ResponseEntity<>(getUserDetails(user), HttpStatus.OK);
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
-        }
-    } */
+    /*
+     * public ResponseEntity<?> loginUser(@RequestParam String email, @RequestParam
+     * String password) {
+     * try {
+     * Authentication authentication = authenticationManager.authenticate(
+     * new UsernamePasswordAuthenticationToken(email, password)
+     * );
+     * 
+     * SecurityContextHolder.getContext().setAuthentication(authentication);
+     * 
+     * System.out.println("User authenticated: " +
+     * authentication.isAuthenticated());
+     * System.out.println("Authentication principal: " +
+     * authentication.getPrincipal());
+     * 
+     * User user = userService.findByEmail(email);
+     * return new ResponseEntity<>(getUserDetails(user), HttpStatus.OK);
+     * } catch (BadCredentialsException e) {
+     * return ResponseEntity.status(HttpStatus.UNAUTHORIZED).
+     * body("Invalid email or password");
+     * }
+     * }
+     */
 
     @PostMapping("/logout")
-    @PreAuthorize("hasRole('USER')") 
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> logoutUser(HttpServletRequest request) {
         SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
         logoutHandler.logout(request, null, null);
@@ -220,13 +231,13 @@ public class UserController {
     }
 
     @DeleteMapping("/user/{id}")
-    @PreAuthorize("hasRole('ADMIN')")  // Ensure only admins can delete users
+    @PreAuthorize("hasRole('ADMIN')") // Ensure only admins can delete users
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {
             userService.deleteUser(id);
             return ResponseEntity.ok("User deleted successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found or could not be deleted");
-            }
+        }
     }
 }
