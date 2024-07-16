@@ -113,19 +113,16 @@ public class UserController {
             @RequestParam String password, @RequestParam String talentName, @RequestParam String inctureId,
             @RequestParam String otp) {
         System.out.println("Register endpoint hit with email: " + email);
-        boolean isValid = true; // otpService.verifyOtp(email, otp);
-
+        boolean isValid = otpService.verifyOtp(email, otp);
+        
         if (isValid) {
             Set<String> roles = new HashSet<>();
             roles.add("USER");
 
             String message = userService.registerUser(email, password, roles, talentName, inctureId);
-            if (message == "User")
-                return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED);
-            else if (message == "UnauthorizedUser")
-                return new ResponseEntity<>("User registered successfully", HttpStatus.I_AM_A_TEAPOT);
-            else
-                return new ResponseEntity<>("User non registered", HttpStatus.INTERNAL_SERVER_ERROR);
+            if(message == "User")                   return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED);
+            else if(message == "UnauthorizedUser")  return new ResponseEntity<>("User registered successfully", HttpStatus.I_AM_A_TEAPOT);
+            else                                    return new ResponseEntity<>("User not registered", HttpStatus.INTERNAL_SERVER_ERROR);
         } else {
             return ResponseEntity.badRequest().body("Invalid OTP.");
         }
@@ -197,30 +194,6 @@ public class UserController {
         // Set other necessary fields
         return userDto;
     }
-
-    /*
-     * public ResponseEntity<?> loginUser(@RequestParam String email, @RequestParam
-     * String password) {
-     * try {
-     * Authentication authentication = authenticationManager.authenticate(
-     * new UsernamePasswordAuthenticationToken(email, password)
-     * );
-     * 
-     * SecurityContextHolder.getContext().setAuthentication(authentication);
-     * 
-     * System.out.println("User authenticated: " +
-     * authentication.isAuthenticated());
-     * System.out.println("Authentication principal: " +
-     * authentication.getPrincipal());
-     * 
-     * User user = userService.findByEmail(email);
-     * return new ResponseEntity<>(getUserDetails(user), HttpStatus.OK);
-     * } catch (BadCredentialsException e) {
-     * return ResponseEntity.status(HttpStatus.UNAUTHORIZED).
-     * body("Invalid email or password");
-     * }
-     * }
-     */
 
     @PostMapping("/logout")
     @PreAuthorize("hasRole('USER')")

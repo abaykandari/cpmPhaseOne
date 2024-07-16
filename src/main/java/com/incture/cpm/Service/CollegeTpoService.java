@@ -1,7 +1,10 @@
 package com.incture.cpm.Service;
 
 import com.incture.cpm.Entity.CollegeTPO;
+import com.incture.cpm.Entity.InterviewerScheduling;
 import com.incture.cpm.Repo.CollegeTPORepo;
+import com.incture.cpm.Repo.IntervieweScheduleRepo;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +18,8 @@ public class CollegeTpoService {
     @Autowired
     private CollegeTPORepo myTPORepo;
 
+    @Autowired
+    private IntervieweScheduleRepo intervieweScheduleRepo;
     public CollegeTPO insertFunction(CollegeTPO collegeTPO) {
         // collegeTPO.setCollegeId(generateRandomInt());
         return this.myTPORepo.save(collegeTPO);
@@ -56,9 +61,16 @@ public class CollegeTpoService {
     }
 
     public void deleteCollegeTPO(int collegeId) {
-        myTPORepo.deleteById(collegeId);
+        CollegeTPO existingaCollegeTpo=myTPORepo.findById(collegeId).orElse(null);
+ 
+        InterviewerScheduling existinginterviewerScheduling=existingaCollegeTpo.getInterviewerSchedulings();
+            if (existinginterviewerScheduling != null) {
+                existinginterviewerScheduling.setCollegeTPO(null);
+                intervieweScheduleRepo.save(existinginterviewerScheduling);
+            }
 
-    }
+                myTPORepo.deleteById(collegeId);
+            }
 /* 
     private int generateRandomInt() {
         Random random = new Random();

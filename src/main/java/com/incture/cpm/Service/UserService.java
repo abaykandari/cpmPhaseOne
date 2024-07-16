@@ -8,20 +8,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.incture.cpm.Entity.History;
-import com.incture.cpm.Entity.History;
 import com.incture.cpm.Entity.Talent;
 import com.incture.cpm.Entity.UnauthorizedUser;
 import com.incture.cpm.Entity.User;
-import com.incture.cpm.Repo.HistoryRepo;
-import com.incture.cpm.Repo.HistoryRepo;
 import com.incture.cpm.Repo.TalentRepository;
 import com.incture.cpm.Repo.UnauthorizedUserRepo;
 import com.incture.cpm.Repo.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
-import java.util.Date;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Set;

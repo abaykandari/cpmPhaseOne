@@ -49,6 +49,9 @@ public class CollegeTPO {
     private String state;
     @Column
     private double compensation;
+    @JsonIgnore
+@OneToOne(mappedBy = "collegeTPO", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
+private InterviewerScheduling interviewerSchedulings;
 
     //mapping
 

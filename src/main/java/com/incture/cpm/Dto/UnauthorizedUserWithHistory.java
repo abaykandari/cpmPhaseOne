@@ -10,11 +10,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UnauthorizedUserWithHistory {
-    private UserDto userDto;
+    private UnauthorizedUserDto user;
     private List<History> history;    
 
-    public UnauthorizedUserWithHistory(UserDto userDto, List<History> history) {
-        this.userDto = userDto;
+    public UnauthorizedUserWithHistory(UnauthorizedUserDto user, List<History> history) {
+        this.user = user;
         this.history = history;
     }
 }

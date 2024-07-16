@@ -12,8 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.incture.cpm.Dto.UnauthorizedUserDto;
 import com.incture.cpm.Dto.UnauthorizedUserWithHistory;
-import com.incture.cpm.Dto.UserDto;
 import com.incture.cpm.Entity.History;
 import com.incture.cpm.Entity.UnauthorizedUser;
 import com.incture.cpm.Entity.User;
@@ -39,12 +39,13 @@ public class UnauthorizedUserService {
         List<UnauthorizedUserWithHistory> userWithHistories = new ArrayList<>();
 
         for (UnauthorizedUser user : users) {
-            UserDto userDto = new UserDto();
+            UnauthorizedUserDto userDto = new UnauthorizedUserDto();
             userDto.setId(user.getId());
             userDto.setEmail(user.getEmail());
             userDto.setRoles(user.getRoles());
             userDto.setTalentName(user.getTalentName());
             userDto.setInctureId(user.getInctureId());
+            userDto.setStatus(user.getStatus());
 
             List<History> history = historyService.getHistoryByEntityId(user.getId().toString(), "UnauthorizedUser");
             userWithHistories.add(new UnauthorizedUserWithHistory(userDto, history));
@@ -52,7 +53,7 @@ public class UnauthorizedUserService {
 
         return userWithHistories;
     }
-
+    
     @Transactional
     public void approveRequest(Long id, String approver) {
         try {
@@ -70,7 +71,7 @@ public class UnauthorizedUserService {
                     "Approved by: " + approver + " on " + new Date().toString(),
                     approver);
 
-            // sendStatusEmail(unauthorizedUser.getEmail(), "approved");
+            sendStatusEmail(unauthorizedUser.getEmail(), "approved");
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
             throw new RuntimeException("An unexpected error occurred while approving the request.", e);
@@ -103,17 +104,14 @@ public class UnauthorizedUserService {
                     "Declined by: " + decliner + " on " + new Date().toString(),
                     decliner);
 
-            // sendStatusEmail(unauthorizedUser.getEmail(), "declined");
+            sendStatusEmail(unauthorizedUser.getEmail(), "declined");
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
             throw new RuntimeException("An unexpected error occurred while declining the request.", e);
         }
     }
 
-    public void registerUser(String email, String password, Set<String> roles, String talentName, String inctureId) { // for
-                                                                                                                      // super
-                                                                                                                      // admin
-                                                                                                                      // registration
+    public void registerUser(String email, String password, Set<String> roles, String talentName, String inctureId) { // for super admin registration
         User user = new User();
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
