@@ -24,7 +24,7 @@ import com.incture.cpm.Repo.UserRepository;
 public class UnauthorizedUserService {
 
     @Autowired
-    private UnauthorizedUserRepo unauthorizedUserRepository; 
+    private UnauthorizedUserRepo unauthorizedUserRepository;
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -53,25 +53,24 @@ public class UnauthorizedUserService {
         return userWithHistories;
     }
 
-    
     @Transactional
     public void approveRequest(Long id, String approver) {
-        try{
-            UnauthorizedUser unauthorizedUser = unauthorizedUserRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User does not exists"));
-            
+        try {
+            UnauthorizedUser unauthorizedUser = unauthorizedUserRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("User does not exists"));
+
             User newUser = new User(unauthorizedUser);
             userRepository.save(newUser);
             unauthorizedUser.setStatus("Approved");
             unauthorizedUserRepository.save(unauthorizedUser);
-            
-            historyService.logHistory(
-                unauthorizedUser.getId().toString(),
-                "UnauthorizedUser",
-                "Approved by: " + approver + " on " + new Date().toString(),
-                approver
-            );
 
-            //sendStatusEmail(unauthorizedUser.getEmail(), "approved");
+            historyService.logHistory(
+                    unauthorizedUser.getId().toString(),
+                    "UnauthorizedUser",
+                    "Approved by: " + approver + " on " + new Date().toString(),
+                    approver);
+
+            // sendStatusEmail(unauthorizedUser.getEmail(), "approved");
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
             throw new RuntimeException("An unexpected error occurred while approving the request.", e);
@@ -82,34 +81,39 @@ public class UnauthorizedUserService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
         message.setSubject("CPM -> Your OTP Code");
-        if(status == "approved") message.setText("Your Registration request is approved :)");
-        else message.setText("Your Registration request is declined :(");
+        if (status == "approved")
+            message.setText("Your Registration request is approved :)");
+        else
+            message.setText("Your Registration request is declined :(");
         mailSender.send(message);
     }
-    
+
     @Transactional
     public void declineRequest(Long id, String decliner) {
-        try{
-            UnauthorizedUser unauthorizedUser = unauthorizedUserRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User does not exists"));
+        try {
+            UnauthorizedUser unauthorizedUser = unauthorizedUserRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("User does not exists"));
 
             unauthorizedUser.setStatus("Declined");
             unauthorizedUserRepository.save(unauthorizedUser);
 
             historyService.logHistory(
-                unauthorizedUser.getId().toString(),
-                "UnauthorizedUser",
-                "Declined by: " + decliner + " on " + new Date().toString(),
-                decliner
-            );
-            
-            //sendStatusEmail(unauthorizedUser.getEmail(), "declined");
+                    unauthorizedUser.getId().toString(),
+                    "UnauthorizedUser",
+                    "Declined by: " + decliner + " on " + new Date().toString(),
+                    decliner);
+
+            // sendStatusEmail(unauthorizedUser.getEmail(), "declined");
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
             throw new RuntimeException("An unexpected error occurred while declining the request.", e);
         }
     }
 
-    public void registerUser(String email, String password, Set<String> roles, String talentName, String inctureId) { // for super admin registration
+    public void registerUser(String email, String password, Set<String> roles, String talentName, String inctureId) { // for
+                                                                                                                      // super
+                                                                                                                      // admin
+                                                                                                                      // registration
         User user = new User();
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));

@@ -59,7 +59,10 @@ public class MentorService {
         Optional<Talent> talent = talentRepository.findById(talentId);
         if (talent.isEmpty()) {
             throw new ResourceNotFoundException("No Talent exist with given Talent Id");
+        } else if (talent.get().getTalentStatus() != "ACTIVE") {
+            throw new ResourceNotFoundException("Talent is Inactive");
         }
+
         Optional<Member> member = memberRepository.findByTalentId(talentId);
         if (member.isPresent()) {
             throw new ResourceAlreadyExistsException(

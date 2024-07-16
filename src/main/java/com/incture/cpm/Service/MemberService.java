@@ -77,6 +77,8 @@ public class MemberService {
         Optional<Talent> talent = talentRepository.findById(talentId);
         if (talent.isEmpty()) {
             throw new ResourceNotFoundException("No Talent exists with given Talent Id");
+        } else if (talent.get().getTalentStatus() != "ACTIVE") {
+            throw new ResourceNotFoundException("Talent is Inactive");
         }
 
         Optional<Team> team = teamRepository.findById(teamId);
