@@ -1,6 +1,5 @@
 package com.incture.cpm.Service;
 
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,11 @@ public class HistoryService {
         historyRepo.save(historyEntry);
     }
 
-    public List<History> getHistoryByEntityId(String entityId, String entityType) {
+    public List<History> getAllHistoryByEntityId(String entityId, String entityType) {
         return historyRepo.findByEntityIdAndEntityType(entityId, entityType);
+    }
+
+    public List<History> getAllUserHistory(String entityType) {
+        return historyRepo.findAllByEntityType(entityType); 
     }
 }

@@ -47,7 +47,7 @@ public class UnauthorizedUserService {
             userDto.setInctureId(user.getInctureId());
             userDto.setStatus(user.getStatus());
 
-            List<History> history = historyService.getHistoryByEntityId(user.getId().toString(), "UnauthorizedUser");
+            List<History> history = historyService.getAllHistoryByEntityId(user.getId().toString(), "UnauthorizedUser");
             userWithHistories.add(new UnauthorizedUserWithHistory(userDto, history));
         }
 

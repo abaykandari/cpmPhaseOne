@@ -10,4 +10,6 @@ import com.incture.cpm.Entity.History;
 @Repository
 public interface HistoryRepo extends JpaRepository<History, Long> {
     List<History> findByEntityIdAndEntityType(String entityId, String entityType);
+
+    List<History> findAllByEntityType(String entityType);
 }

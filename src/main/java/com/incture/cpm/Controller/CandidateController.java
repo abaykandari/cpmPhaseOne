@@ -2,6 +2,7 @@ package com.incture.cpm.Controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -60,14 +61,13 @@ public class CandidateController {
 
     //------------------------------------------------
 
-    @PostMapping("/upload")
+    @PostMapping("/upload/{collegeId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> upload(@RequestParam MultipartFile file) {
+    public ResponseEntity<?> upload(@RequestParam MultipartFile file, @PathVariable int collegeId) throws NotFoundException {
         if (Helper.checkExcelFormat(file)) {
             //true
 
-            this.candidateService.save(file);
-
+            this.candidateService.feedCandidateData(file, collegeId);
             return ResponseEntity.ok(Map.of("message", "File is uploaded and data is saved to db"));
 
 

@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
  
- 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,6 +25,7 @@ public class Candidate {
     // @ManyToOne
     private String candidateCollege;
     private String department;
+    private int collegeId;
 
     // @Column(unique = true, nullable = false)
     private String email;

@@ -27,11 +27,7 @@ import java.util.stream.Collectors;
 public class AcademicInternsService {
    @Autowired
     private AcademicInternsRepository attendanceRepository;
- 
-    private String meetingTitle = "";
-    private String meetingDuration = "";
     private String date;
-    private List<String[]> participants = new ArrayList<>();
  
     public void readCSV(MultipartFile file) throws IOException {
  

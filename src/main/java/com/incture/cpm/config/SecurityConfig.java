@@ -52,9 +52,9 @@ public class SecurityConfig {
                                 "/security/registerAdmin", "/super/security/register", "/security/generateOtp",
                                 "/security/forgotPassword")
                         .permitAll()
-                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/super/**").hasAuthority("ROLE_SUPERADMIN")
-                        .requestMatchers("/**").hasAnyAuthority("ROLE_USER") // , "ROLE_ADMIN")
+                        .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERADMIN")
+                        .requestMatchers("/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN","ROLE_SUPERADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -69,10 +69,9 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-                .userDetailsService(customUserDetailsService)
-                .passwordEncoder(passwordEncoder)
-                .and()
-                .build();
+        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder.userDetailsService(customUserDetailsService)
+                                    .passwordEncoder(passwordEncoder);
+        return authenticationManagerBuilder.build();
     }
 }

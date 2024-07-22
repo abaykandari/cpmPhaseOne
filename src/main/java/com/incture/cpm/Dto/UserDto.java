@@ -14,4 +14,5 @@ public class UserDto {
     private Set<String> roles;
     private String talentName;
     private String inctureId;
+    private byte[] photo;
 }

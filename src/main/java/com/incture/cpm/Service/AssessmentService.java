@@ -1,7 +1,9 @@
 package com.incture.cpm.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -23,6 +25,7 @@ import com.incture.cpm.Entity.Candidate;
 import com.incture.cpm.Repo.AssessmentRepo;
 import com.incture.cpm.Repo.CandidateRepository;
 import com.incture.cpm.Repo.CollegeRepository;
+import com.incture.cpm.Util.ExcelUtil;
 
 @Service
 public class AssessmentService {
@@ -38,6 +41,9 @@ public class AssessmentService {
     @Autowired
     CollegeRepository collegeRepository;
 
+    @Autowired
+    ExcelUtil excelUtil;
+
     public Object getAllAssessments() {
         return assessmentRepo.findAll();
     }
@@ -46,6 +52,24 @@ public class AssessmentService {
         return assessmentRepo.findAllByCollege(collegeRepository.findById(collegeId).
                                 orElseThrow(() -> new IllegalArgumentException("No College Found For id :" + collegeId)))
                                 .orElseThrow(() -> new IllegalArgumentException("Assessment for given college not found"));
+    }
+
+    public String loadCandidates(int collegeId){
+        List<Candidate> candidates = candidateRepository.findByCollegeId(collegeId);
+        
+        for(Candidate candidate : candidates){
+            String email = candidate.getEmail();
+            Assessment existingAssessment = assessmentRepo.findByEmail(email).orElse(null);
+            if(existingAssessment == null){
+                Assessment assessment = new Assessment();
+                assessment.setEmail(email);
+                assessment.setCandidateName(candidate.getCandidateName());
+                assessment.setCollege(collegeRepository.findById(collegeId).orElseThrow(() -> new IllegalArgumentException("College not found college id: " + collegeId)));
+                assessmentRepo.save(assessment);
+            }
+        }
+
+        return "Candidates Loaded Successfully";
     }
 
     @Transactional
@@ -111,25 +135,56 @@ public class AssessmentService {
     }
 
     @Transactional
-    public void save(MultipartFile file, int collegeId) {
-        try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
-            Sheet sheet = workbook.getSheetAt(0);
-            for (Row row : sheet) {
-                if (row.getRowNum() == 0)   continue; // Skip the header row
+    public void uploadLevelOne(MultipartFile file, int collegeId) {
+        try {
+            List<Map<String, String>> dataList = excelUtil.readExcelFile(file);
 
+            for (Map<String, String> data : dataList) {
                 AssessmentLevelOne assessmentLevelOne = new AssessmentLevelOne();
-                assessmentLevelOne.setCandidateName(row.getCell(0).getStringCellValue());
-                assessmentLevelOne.setEmail(row.getCell(1).getStringCellValue());
-                assessmentLevelOne.setQuantitativeScore((int) row.getCell(2).getNumericCellValue());
-                assessmentLevelOne.setLogicalScore((int) row.getCell(3).getNumericCellValue());
-                assessmentLevelOne.setVerbalScore((int) row.getCell(4).getNumericCellValue());
-                assessmentLevelOne.setCodingScore((int) row.getCell(5).getNumericCellValue());
-                    
+                assessmentLevelOne.setCandidateName(data.get("candidateName"));
+                assessmentLevelOne.setEmail(data.get("email"));
+                assessmentLevelOne.setQuantitativeScore((int) Double.parseDouble(data.get("quantitativeScore")));
+                assessmentLevelOne.setLogicalScore((int) Double.parseDouble(data.get("logicalScore")));
+                assessmentLevelOne.setVerbalScore((int) Double.parseDouble(data.get("verbalScore")));
+                assessmentLevelOne.setCodingScore((int) Double.parseDouble(data.get("codingScore")));
+
                 createAssessment(assessmentLevelOne, collegeId);
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to parse Excel file: " + e.getMessage());
         }
+    }
+
+    @Transactional
+    public void newUploadLevelOne(MultipartFile file, int collegeId) {
+        List<String> errorMessages = new ArrayList<>();
+        try {
+            List<Map<String, String>> dataList = excelUtil.readExcelFile(file);
+
+            for (Map<String, String> data : dataList) {
+                try {
+                    Assessment assessment = assessmentRepo.findByEmail(data.get("email")).orElseThrow(() -> new IllegalArgumentException("Assessment not found for the email:" + data.get("email")));
+                    
+                    AssessmentLevelOne assessmentLevelOne = new AssessmentLevelOne();
+                    assessmentLevelOne.setCandidateName(assessment.getCandidateName());
+                    assessmentLevelOne.setEmail(assessment.getCandidateName());
+                    assessmentLevelOne.setQuantitativeScore((int) Double.parseDouble(data.get("quantitativeScore")));
+                    assessmentLevelOne.setLogicalScore((int) Double.parseDouble(data.get("logicalScore")));
+                    assessmentLevelOne.setVerbalScore((int) Double.parseDouble(data.get("verbalScore")));
+                    assessmentLevelOne.setCodingScore((int) Double.parseDouble(data.get("codingScore")));
+                    assessmentLevelOne.updateTotalScore();
+
+                    assessment.setAssessmentLevelOne(assessmentLevelOne);
+                    assessmentRepo.save(assessment);
+                } catch (Exception e) {
+                    errorMessages.add("Failed to process email " + data.get("email") + ": " + e.getMessage());
+                }
+            }
+        }  catch (IOException e) {
+            throw new RuntimeException("Failed to parse Excel file: " + e.getMessage());
+        }
+        
+        if (!errorMessages.isEmpty())    throw new RuntimeException("Errors occurred during processing: " + String.join(", ", errorMessages));
     }
 
     @Transactional

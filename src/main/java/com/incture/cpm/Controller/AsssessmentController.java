@@ -25,6 +25,7 @@ import com.incture.cpm.Entity.AssessmentLevelThree;
 import com.incture.cpm.Entity.AssessmentLevelFour;
 import com.incture.cpm.Entity.AssessmentLevelFive;
 import com.incture.cpm.Service.AssessmentService;
+import com.incture.cpm.Util.ExcelUtil;
 
 @RestController
 @RequestMapping("/cpm2/assessment")
@@ -32,13 +33,16 @@ import com.incture.cpm.Service.AssessmentService;
 public class AsssessmentController {
     @Autowired
     AssessmentService assessmentService;
+
+    @Autowired
+    ExcelUtil excelUtil;
  
     @PostMapping("/upload")
-    public ResponseEntity<?> upload(@RequestParam MultipartFile file, @RequestParam int collegeId){
+    public ResponseEntity<?> uploadLevelOne(@RequestParam MultipartFile file, @RequestParam int collegeId){
         if (file.isEmpty())  return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please upload an Excel file");
         
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
-            this.assessmentService.save(file, collegeId);
+            this.assessmentService.uploadLevelOne(file, collegeId);
             return ResponseEntity.ok(Map.of("message", "File is uploaded and data is saved to db"));
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please upload a valid Excel file");
@@ -143,5 +147,10 @@ public class AsssessmentController {
         } catch (Exception e) {
             return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PostMapping("/readExcel") // read and show
+    public ResponseEntity<List<Map<String, String>>> readExcel(@RequestParam("file") MultipartFile file) throws IOException {
+        return ResponseEntity.ok(excelUtil.readExcelFile(file));
     }
 }
