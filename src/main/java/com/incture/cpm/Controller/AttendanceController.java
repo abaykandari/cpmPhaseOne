@@ -7,35 +7,35 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.incture.cpm.Entity.Attendance;
 import com.incture.cpm.Exception.BadRequestException;
 import com.incture.cpm.Exception.ResourceNotFoundException;
 import com.incture.cpm.Service.AttendanceService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/cpm/attendance")
 @CrossOrigin("*")
+@Tag(name = "Attendance", description = "Endpoints for managing attendance records")
 public class AttendanceController {
+
     @Autowired
     AttendanceService attendanceService;
 
-    // used to get all attendance list
+    @Operation(summary = "Get All Attendance Records", description = "Retrieve a list of all attendance records. Accessible only to admins.")
     @GetMapping("/getAllAttendance")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public List<Attendance> getAllAttendance() {
         return attendanceService.getAllAttendance();
     }
 
-    // used in daily view
+    @Operation(summary = "Get Attendance by Date", description = "Retrieve attendance records for a specific date.")
     @GetMapping("/getAttendanceByDate")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Optional<List<Attendance>>> getAttendanceByDate(@RequestParam String date) {
         if (date == null || date.isEmpty()) {
             throw new BadRequestException("Date parameter is required.");
@@ -49,7 +49,7 @@ public class AttendanceController {
         }
     }
 
-    // used temporarily for adding attendance
+    @Operation(summary = "Add Attendance Record", description = "Create a new attendance record.")
     @PostMapping("/addAttendance")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> addAttendance(@RequestBody Attendance attendance) {
@@ -64,7 +64,7 @@ public class AttendanceController {
         }
     }
 
-    // used temporarily for adding attendance list
+    @Operation(summary = "Add Multiple Attendance Records", description = "Create multiple attendance records at once.")
     @PostMapping("/addAttendanceByList")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> addAttendanceByList(@RequestBody List<Attendance> attendance) {
@@ -79,7 +79,7 @@ public class AttendanceController {
         }
     }
 
-    // used in weekly and monthly view
+    @Operation(summary = "Get Attendance by Date Range and Talent", description = "Retrieve attendance records for a specific date range and talent ID.")
     @GetMapping("/getAttendanceByDateRangeAndTalent")
     public ResponseEntity<Optional<List<Attendance>>> getAttendanceByDateRangeAndTalent(
             @RequestParam String startDate,
@@ -97,7 +97,7 @@ public class AttendanceController {
         }
     }
 
-    // give filtered attendance data w.r.t to the reporting manager
+    @Operation(summary = "Get Attendance by Date and Reporting Manager", description = "Retrieve filtered attendance records by date and reporting manager.")
     @GetMapping("/getAllAttendanceWRTrm")
     public ResponseEntity<Optional<List<Attendance>>> getAttendanceByDateRM(
             @RequestParam String date,

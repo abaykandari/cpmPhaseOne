@@ -4,7 +4,7 @@ import com.incture.cpm.Entity.TalentAssessment;
 import com.incture.cpm.Dto.TalentAssessmentDto;
 import com.incture.cpm.Entity.Talent;
 import com.incture.cpm.Service.TalentAssessmentService;
-import com.incture.cpm.helper.Helper;
+import com.incture.cpm.Util.ExcelUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +22,9 @@ public class TalentAssessmentController {
 
     @Autowired
     private TalentAssessmentService assessmentService;
+
+    @Autowired
+    private ExcelUtil excelUtil;
 
     @GetMapping("/assementwiseview")
     public ResponseEntity<List<TalentAssessment>> getUniqueAssessments() {
@@ -77,7 +80,7 @@ public class TalentAssessmentController {
 
     @PostMapping("/uploadexcel")
     public ResponseEntity<?> uploadExcelFile(@RequestPart MultipartFile file) {
-        if (Helper.checkExcelFormat(file)) {
+        if (excelUtil.checkExcelFormat(file)) {
             String message = this.assessmentService.save(file);
 
             return ResponseEntity.ok(Map.of("message", message));

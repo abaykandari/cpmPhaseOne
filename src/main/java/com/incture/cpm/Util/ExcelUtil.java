@@ -17,6 +17,14 @@ import java.util.Map;
 @Component
 public class ExcelUtil {
 
+    // check that file is of excel type or not
+    public boolean checkExcelFormat(MultipartFile file) {
+        String contentType = file.getContentType();
+ 
+        if (contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) return true;
+        else return false;
+    }
+    
     public List<Map<String, String>> readExcelFile(MultipartFile file) throws IOException {
         List<Map<String, String>> dataList = new ArrayList<>();
         InputStream inputStream = file.getInputStream();
@@ -72,5 +80,28 @@ public class ExcelUtil {
             default:
                 return "";
         }
+    }
+
+    // Method to check if the Excel file has the expected headers
+    public boolean checkExcelHeaders(MultipartFile file, List<String> expectedHeaders) throws IOException {
+        InputStream inputStream = file.getInputStream();
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        Iterator<Row> rowIterator = sheet.iterator();
+        if (rowIterator.hasNext()) {
+            Row headerRow = rowIterator.next();
+            List<String> headers = new ArrayList<>();
+
+            for (Cell cell : headerRow) headers.add(cell.getStringCellValue());
+
+            workbook.close();
+
+            // Check if the headers match the expected format
+            return headers.equals(expectedHeaders);
+        }
+
+        workbook.close();
+        return false; // If there are no rows, the format is not valid
     }
 }

@@ -10,6 +10,7 @@ import com.incture.cpm.Entity.Candidate;
 @Repository
 public interface CandidateRepository extends JpaRepository<Candidate, Long> {
     Optional<Candidate> findByEmail(String email);
+    Optional<Candidate> findByCollegeIdAndEmail(int collegeId, String email);
 
     List<Candidate> findByCollegeId(int collegeId);
 }

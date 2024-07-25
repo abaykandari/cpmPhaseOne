@@ -25,13 +25,15 @@ import com.incture.cpm.Service.HistoryService;
 import com.incture.cpm.Service.UnauthorizedUserService;
 import com.incture.cpm.Service.UserService;
 
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/super/security")
 @Slf4j
+@Tag(name = "SuperAdmin", description = "Superadmin management APIs")
 public class UnauthorizedUserController {
 
     @Autowired
@@ -43,21 +45,25 @@ public class UnauthorizedUserController {
     @Autowired
     private HistoryService historyService;
 
+    @Operation(summary = "Get all unauthorized user requests", description = "Retrieve a list of all unauthorized user requests.")
     @GetMapping("/getAllRequests")
     public List<UnauthorizedUserWithHistory> getAllRequests() {
         return unauthorizedUserService.getAllRequests();
     }
 
+    @Operation(summary = "Get all users", description = "Retrieve a list of all registered users.")
     @GetMapping("/getAllUsers")
     public ResponseEntity<?> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    @Operation(summary = "Get all user history", description = "Retrieve a list of all user history entries.")
     @GetMapping("/getAllUserHistory")
     public ResponseEntity<?> getAllUserHistory(){
         return ResponseEntity.ok(historyService.getAllUserHistory("User"));
     }
 
+    @Operation(summary = "Register a new SuperAdmin", description = "Register a new SuperAdmin with the specified details.")
     @PostMapping("/register")
     public ResponseEntity<?> registerSuperAdmin(@RequestParam String email,
             @RequestParam String password, @RequestParam String talentName, @RequestParam String inctureId) {
@@ -70,22 +76,23 @@ public class UnauthorizedUserController {
         return ResponseEntity.ok("SuperAdmin registered successfully");
     }
 
+    @Operation(summary = "Approve an unauthorized user request", description = "Approve a request for an unauthorized user by ID.")
     @PutMapping("/approve")
     public ResponseEntity<?> approveRequest(@RequestParam Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         unauthorizedUserService.approveRequest(id, authentication.getName());
         return ResponseEntity.ok("Request approved successfully");
     }
 
+    @Operation(summary = "Decline an unauthorized user request", description = "Decline a request for an unauthorized user by ID.")
     @PutMapping("/decline")
     public ResponseEntity<?> declineRequest(@RequestParam Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         unauthorizedUserService.declineRequest(id, authentication.getName());
         return ResponseEntity.ok("Request declined successfully");
     }
 
+    @Operation(summary = "Change user roles", description = "Change the roles of a user by ID.")
     @PutMapping("/changeRole")
     public ResponseEntity<String> changeRole(@RequestParam Long id, @RequestParam Set<String> newRoles) {
         log.info("Change role hit with id : " + id);
@@ -94,7 +101,8 @@ public class UnauthorizedUserController {
         return new ResponseEntity<>(userService.changeRole(id, newRoles, authentication.getName()), HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "/deleteUsers",consumes = "application/json")
+    @Operation(summary = "Delete users", description = "Delete a list of users.")
+    @DeleteMapping(value = "/deleteUsers", consumes = "application/json")
     public ResponseEntity<?> deleteUsers(@RequestBody List<User> users) {
         try {
             userService.deleteUsers(users);

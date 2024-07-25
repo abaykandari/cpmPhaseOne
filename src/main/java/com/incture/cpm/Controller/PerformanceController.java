@@ -20,19 +20,26 @@ import com.incture.cpm.Exception.BadRequestException;
 import com.incture.cpm.Exception.ResourceNotFoundException;
 import com.incture.cpm.Service.PerformanceService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/cpm/performance")
+@Tag(name = "Performance", description = "Endpoints for managing performance records")
 public class PerformanceController {
+
     @Autowired
     private PerformanceService performanceService;
 
+    @Operation(summary = "Get All Performances", description = "Retrieve all performance records. Accessible only to admins.")
     @GetMapping("/getAllPerformance")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public List<Performance> getAllPerformances() {
         return performanceService.getAllPerformances();
     }
-    
+
+    @Operation(summary = "Get Performance by ID", description = "Retrieve a performance record by its ID. Requires a valid Talent ID.")
     @GetMapping("/getPerformanceById")
     public ResponseEntity<Performance> getPerformanceById(@RequestParam Long talentId) {
         if (talentId == null) {
@@ -51,6 +58,7 @@ public class PerformanceController {
         }
     }
 
+    @Operation(summary = "Update Performance", description = "Update a performance record. Requires valid performance data.")
     @PostMapping("/updatePerformance")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> updatePerformance(@RequestBody Performance performance) {
@@ -67,6 +75,7 @@ public class PerformanceController {
         }
     }
 
+    @Operation(summary = "Add Performance Records by List", description = "Add multiple performance records at once. Requires a list of performance data.")
     @PostMapping("/addPerformanceByList")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> addPerformanceByList(@RequestBody List<Performance> performanceList) {
@@ -81,6 +90,7 @@ public class PerformanceController {
         }
     }
 
+    @Operation(summary = "Update Performance Feedback", description = "Update feedback for a performance record. Requires valid performance data.")
     @PostMapping("/updateFeedback")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> updateFeedback(@RequestBody Performance performance) {
@@ -97,6 +107,7 @@ public class PerformanceController {
         }
     }
 
+    @Operation(summary = "Delete Performance Record", description = "Delete a performance record. Requires valid performance data.")
     @DeleteMapping("/deletePerformance")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> deletePerformance(@RequestBody Performance performance) {
@@ -113,6 +124,7 @@ public class PerformanceController {
         }
     }
 
+    @Operation(summary = "Delete Performance by ID", description = "Delete a performance record by its ID. Requires a valid Talent ID.")
     @DeleteMapping("/deletePerformanceById")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> deletePerformance(@RequestParam Long talentId) {

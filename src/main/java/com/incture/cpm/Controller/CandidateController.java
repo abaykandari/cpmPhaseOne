@@ -1,6 +1,5 @@
 package com.incture.cpm.Controller;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
@@ -10,8 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.incture.cpm.Entity.Candidate;
-import com.incture.cpm.helper.Helper;
 import com.incture.cpm.Service.CandidateService;
+import com.incture.cpm.Util.ExcelUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,11 @@ public class CandidateController {
     @Autowired
     private CandidateService candidateService;
 
-    @GetMapping
+    @Autowired
+    private ExcelUtil excelUtil;
+    
+    
+    @GetMapping("/getAll")
     public List<Candidate> getAllCandidates() {
         return candidateService.getAllCandidates();
     }
@@ -64,7 +67,7 @@ public class CandidateController {
     @PostMapping("/upload/{collegeId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> upload(@RequestParam MultipartFile file, @PathVariable int collegeId) throws NotFoundException {
-        if (Helper.checkExcelFormat(file)) {
+        if (excelUtil.checkExcelFormat(file)) {
             //true
 
             this.candidateService.feedCandidateData(file, collegeId);
@@ -76,8 +79,4 @@ public class CandidateController {
     }
 
 
-    @GetMapping("/getAll")
-    public List<Candidate> getAllProduct() {
-        return this.candidateService.getAllProducts();
-    }
 }

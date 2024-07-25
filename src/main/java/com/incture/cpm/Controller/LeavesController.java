@@ -21,36 +21,46 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
 import com.incture.cpm.Entity.Leaves;
 import com.incture.cpm.Service.LeavesService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/cpm/leaves")
+@Tag(name = "Leaves", description = "Endpoints for managing leave records")
 public class LeavesController {
+
     @Autowired
     private LeavesService leavesService;
 
+    @Operation(summary = "Get All Leaves", description = "Retrieve all leave records. Accessible only to admins.")
     @GetMapping("/getAll")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public List<Leaves> getLeaves() {
         return leavesService.getAll();
     }
 
+    @Operation(summary = "Add Leave with File", description = "Add a leave record along with an optional file attachment.")
     @PostMapping("/addLeave")
     public ResponseEntity<String> addLeave(@RequestPart("leave") Leaves leave,
-                                    @RequestPart("file") MultipartFile file) throws SerialException, SQLException, IOException{
+                                    @RequestPart("file") MultipartFile file) throws SerialException, SQLException, IOException {
         String message = leavesService.addLeave(leave, file);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
+    @Operation(summary = "Add Multiple Leaves", description = "Add multiple leave records at once. Accessible only to admins.")
     @PostMapping("/addLeaves")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> addLeaves(@RequestBody List<Leaves> leaves){
+    public ResponseEntity<String> addLeaves(@RequestBody List<Leaves> leaves) {
         String message = leavesService.addLeaves(leaves);
         return new ResponseEntity<>(message, HttpStatus.OK);
-  }
+    }
 
+    @Operation(summary = "Approve Leave", description = "Approve a leave request by its ID. Accessible only to admins.")
     @PutMapping("/approve/{leaveId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> approve(@PathVariable Long leaveId) {
@@ -58,6 +68,7 @@ public class LeavesController {
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
+    @Operation(summary = "Decline Leave", description = "Decline a leave request by its ID with a reason for rejection. Accessible only to admins.")
     @PutMapping("/decline/{leaveId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> decline(@PathVariable Long leaveId, @RequestParam String reasonForReject) {

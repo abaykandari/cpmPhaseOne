@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+                    config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://192.168.137.235:3000", "http://localhost:3000"));
                     config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
                     config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
                     config.setExposedHeaders(Arrays.asList("Authorization", "Content-Length", "X-Content-Range"));
@@ -50,8 +50,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/security/", "/security/login", "/security/register",
                                 "/security/registerAdmin", "/super/security/register", "/security/generateOtp",
-                                "/security/forgotPassword")
-                        .permitAll()
+                                "/security/forgotPassword", "/error").permitAll()
+                        .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/super/**").hasAuthority("ROLE_SUPERADMIN")
                         .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPERADMIN")
                         .requestMatchers("/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN","ROLE_SUPERADMIN")

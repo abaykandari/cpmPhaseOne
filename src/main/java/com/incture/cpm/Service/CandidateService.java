@@ -8,13 +8,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.incture.cpm.Entity.Candidate;
 import com.incture.cpm.Entity.CollegeTPO;
-import com.incture.cpm.helper.Helper;
  
 import com.incture.cpm.Repo.CandidateRepository;
 import com.incture.cpm.Repo.CollegeRepository;
 import com.incture.cpm.Util.ExcelUtil;
- 
+ import java.time.Year;
+
 import java.io.IOException;
+
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,60 +51,48 @@ public class CandidateService {
         candidateRepository.deleteById(id);
     }
  
-    // ----------------------------------------------------------------
-   
-   
-    public void save(MultipartFile file) {
- 
-        try {
-            List<Candidate> candidates = Helper.convertExcelToListOfProduct(file.getInputStream());
-            this.candidateRepository.saveAll(candidates);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
- 
-    public List<Candidate> getAllProducts() {
-        return this.candidateRepository.findAll();
-    }
- 
     @Transactional
-    public void feedCandidateData(MultipartFile file, int collegeId) throws NotFoundException {
-        try {
-            List<Map<String, String>> dataList = excelUtil.readExcelFile(file);
-   
-            for (Map<String, String> data : dataList) {
-                Optional<CollegeTPO> clg = collegeRepository.findById(collegeId);
-                if(clg.isEmpty()) throw new NotFoundException();
-               
-                Candidate cand = new Candidate();
-                cand.setCandidateName(data.get("Name"));
-                cand.setEmail(data.get("email"));
-                cand.setTenthPercent(Double.parseDouble(data.get("10th %")));
-                cand.setTwelthPercent(Double.parseDouble(data.get("12th %")));
-                cand.setFatherName(data.get("fatherName"));
-                cand.setPermanentAddress(data.get("address"));
-                cand.setMotherName(data.get("motherName"));
-                cand.setCgpaUndergrad(Double.parseDouble(data.get("CGPA U")));
-                cand.setCgpaMasters(Double.parseDouble(data.get("CGPA M")));
-                cand.setPhoneNumber(data.get("phoneNum"));
-               
-                cand.setCurrentLocation(data.get("location"));
-                cand.setAadhaarNumber(data.get("adhaar"));
-                cand.setDOB(data.get("DOB"));
-                cand.setDepartment(data.get("department"));
-                cand.setPanNumber(data.get("pan"));
-                cand.setAlternateNumber(data.get("alterNate"));
-                cand.setCollegeId(collegeId);
-               
-                cand.setStatus("interview pending");
-   
-                cand.setCandidateCollege(clg.get().getCollegeName());
-                candidateRepository.save(cand);
+public void feedCandidateData(MultipartFile file, int collegeId) throws NotFoundException {
+    try {
+        List<Map<String, String>> dataList = excelUtil.readExcelFile(file);
+
+        for (Map<String, String> data : dataList) {
+            Optional<CollegeTPO> clg = collegeRepository.findById(collegeId);
+            if (clg.isEmpty()) throw new NotFoundException();
+
+            String email = Optional.ofNullable(data.get("Email Id")).orElse("");
+            Optional<Candidate> existingCandidate = candidateRepository.findByEmail(email);
+            if (existingCandidate.isPresent()) {
+                // Skip duplicate entry
+                continue;
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to parse Excel file: " + e.getMessage());
+
+            Candidate cand = new Candidate();
+            cand.setCandidateName(Optional.ofNullable(data.get("Student Name")).orElse(""));
+            cand.setEmail(email);
+            cand.setTenthPercent(Optional.ofNullable(data.get("10th %")).map(Double::parseDouble).orElse(0.0));
+            cand.setTwelthPercent(Optional.ofNullable(data.get("12th %")).map(Double::parseDouble).orElse(0.0));
+            cand.setFatherName(Optional.ofNullable(data.get("Father Name")).orElse(""));
+            cand.setPermanentAddress(Optional.ofNullable(data.get("address")).orElse(""));
+            cand.setMotherName(Optional.ofNullable(data.get("Mother Name")).orElse(""));
+            cand.setCgpaUndergrad(Optional.ofNullable(data.get("UG - CGPA")).map(Double::parseDouble).orElse(0.0));
+            cand.setCgpaMasters(Optional.ofNullable(data.get("PG")).map(Double::parseDouble).orElse(0.0));
+            cand.setPhoneNumber(Optional.ofNullable(data.get("Contact No")).orElse(""));
+            cand.setCurrentLocation(Optional.ofNullable(data.get("Current Location")).orElse(""));
+            cand.setAadhaarNumber(Optional.ofNullable(data.get("Aadhar No (Mandate)")).orElse(""));
+            cand.setDOB(Optional.ofNullable(data.get("Dob")).orElse(""));
+            cand.setDepartment(Optional.ofNullable(data.get("Branch")).orElse(""));
+            cand.setPanNumber(Optional.ofNullable(data.get("Pan No (optional)")).orElse(""));
+            cand.setAlternateNumber(Optional.ofNullable(data.get("Alternate Number")).orElse(""));
+            cand.setCollegeId(collegeId);
+            cand.setStatus("Interview Pending");
+            cand.setEkYear(String.valueOf(Year.now().getValue()));
+            cand.setCandidateCollege(clg.get().getCollegeName());
+            candidateRepository.save(cand);
         }
+    } catch (IOException e) {
+        throw new RuntimeException("Failed to parse Excel file: " + e.getMessage());
     }
-   
+}
+
 }

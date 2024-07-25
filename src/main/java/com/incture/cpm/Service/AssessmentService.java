@@ -2,13 +2,10 @@ package com.incture.cpm.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,22 +69,6 @@ public class AssessmentService {
         return "Candidates Loaded Successfully";
     }
 
-    @Transactional
-    public String createAssessment(AssessmentLevelOne assessmentLevelOne, int collegeId) {
-        String email = assessmentLevelOne.getEmail();
-        candidateRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("Candidate with provided email not found for email " + email));
-
-        Assessment assessment = new Assessment();
-        assessment.setEmail(email);
-        assessment.setCandidateName(assessmentLevelOne.getCandidateName());
-        assessment.setAssessmentLevelOne(assessmentLevelOne);
-        assessmentLevelOne.updateTotalScore();
-        assessment.setCollege(collegeRepository.findById(collegeId).orElseThrow(() -> new IllegalArgumentException("College not found college id: " + collegeId)));
-        assessmentRepo.save(assessment);
-        
-        return "Assessment Level One saved successfully";
-    }
-
     public String updateLevelOne(AssessmentLevelOne assessmentLevelOne) {
         Assessment assessment = assessmentRepo.findByEmail(assessmentLevelOne.getEmail()).orElseThrow(() -> new IllegalArgumentException("Assessment not found for the provided email address"));
         assessment.setAssessmentLevelOne(assessmentLevelOne);
@@ -136,29 +117,14 @@ public class AssessmentService {
 
     @Transactional
     public void uploadLevelOne(MultipartFile file, int collegeId) {
-        try {
-            List<Map<String, String>> dataList = excelUtil.readExcelFile(file);
-
-            for (Map<String, String> data : dataList) {
-                AssessmentLevelOne assessmentLevelOne = new AssessmentLevelOne();
-                assessmentLevelOne.setCandidateName(data.get("candidateName"));
-                assessmentLevelOne.setEmail(data.get("email"));
-                assessmentLevelOne.setQuantitativeScore((int) Double.parseDouble(data.get("quantitativeScore")));
-                assessmentLevelOne.setLogicalScore((int) Double.parseDouble(data.get("logicalScore")));
-                assessmentLevelOne.setVerbalScore((int) Double.parseDouble(data.get("verbalScore")));
-                assessmentLevelOne.setCodingScore((int) Double.parseDouble(data.get("codingScore")));
-
-                createAssessment(assessmentLevelOne, collegeId);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to parse Excel file: " + e.getMessage());
-        }
-    }
-
-    @Transactional
-    public void newUploadLevelOne(MultipartFile file, int collegeId) {
         List<String> errorMessages = new ArrayList<>();
+        List<String> expectedHeaders = Arrays.asList("email", "quantitativeScore", "logicalScore", "verbalScore", "codingScore");
+    
         try {
+            // Check if the file has the correct format
+            boolean isFormatValid = excelUtil.checkExcelHeaders(file, expectedHeaders);
+            if (!isFormatValid) throw new RuntimeException("Excel file format is invalid. Expected headers: " + expectedHeaders);
+
             List<Map<String, String>> dataList = excelUtil.readExcelFile(file);
 
             for (Map<String, String> data : dataList) {
@@ -167,7 +133,7 @@ public class AssessmentService {
                     
                     AssessmentLevelOne assessmentLevelOne = new AssessmentLevelOne();
                     assessmentLevelOne.setCandidateName(assessment.getCandidateName());
-                    assessmentLevelOne.setEmail(assessment.getCandidateName());
+                    assessmentLevelOne.setEmail(assessment.getEmail());
                     assessmentLevelOne.setQuantitativeScore((int) Double.parseDouble(data.get("quantitativeScore")));
                     assessmentLevelOne.setLogicalScore((int) Double.parseDouble(data.get("logicalScore")));
                     assessmentLevelOne.setVerbalScore((int) Double.parseDouble(data.get("verbalScore")));
@@ -191,7 +157,7 @@ public class AssessmentService {
     public String selectLevelOne(List<AssessmentLevelOne> levelOneSelectedList) {
         for (AssessmentLevelOne levelOneSelected : levelOneSelectedList) {
             try {
-                Assessment assessment = assessmentRepo.findByEmail(levelOneSelected.getEmail()).orElseThrow(() -> new IllegalArgumentException("Could not find assessment with the provided email"));
+                Assessment assessment = assessmentRepo.findByEmail(levelOneSelected.getEmail()).orElseThrow(() -> new IllegalArgumentException("Could not find assessment with the provided email: " + levelOneSelected.getEmail()));
                 if (assessment.getAssessmentLevelTwo() == null) {
                     assessment.setAssessmentLevelTwo(new AssessmentLevelTwo());
                     assessment.getAssessmentLevelTwo().setEmail(levelOneSelected.getEmail());
