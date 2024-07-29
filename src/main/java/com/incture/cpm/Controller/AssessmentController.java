@@ -9,6 +9,8 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,6 +43,7 @@ public class AssessmentController {
 
     @Autowired
     private ExcelUtil excelUtil;
+
 
     @Operation(summary = "Load Candiates Data", description = "Load candidates data and start their assessment")
     @PostMapping("/loadCandidates")
@@ -103,9 +106,10 @@ public class AssessmentController {
 
     @Operation(summary = "Select Level Five Assessments", description = "Select assessments for Level Five.")
     @PostMapping("/selectLevelFive")
-    public ResponseEntity<String> selectLevelFive(@RequestBody List<AssessmentLevelFive> levelFiveSelectedList){
-        String message = assessmentService.selectLevelFive(levelFiveSelectedList);
-        return new ResponseEntity<>(message, HttpStatus.OK);
+    public ResponseEntity<?> selectLevelFive(@RequestBody List<AssessmentLevelFive> levelFiveSelectedList){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        assessmentService.selectLevelFive(levelFiveSelectedList, authentication.getName());
+        return new ResponseEntity<>("Candidates selected successfully", HttpStatus.OK);
     }
 
     @Operation(summary = "Update Level One Assessment", description = "Update a Level One assessment record.")

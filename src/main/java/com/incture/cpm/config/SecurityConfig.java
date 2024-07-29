@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://192.168.137.235:3000", "http://localhost:3000"));
+                    config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000", "http://192.168.0.137:3000", "http://192.168.137.216:3000"));
                     config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
                     config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
                     config.setExposedHeaders(Arrays.asList("Authorization", "Content-Length", "X-Content-Range"));

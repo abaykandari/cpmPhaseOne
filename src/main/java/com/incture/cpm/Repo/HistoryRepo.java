@@ -12,4 +12,6 @@ public interface HistoryRepo extends JpaRepository<History, Long> {
     List<History> findByEntityIdAndEntityType(String entityId, String entityType);
 
     List<History> findAllByEntityType(String entityType);
+
+    void deleteAllByEntityType(String entityType);
 }

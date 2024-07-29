@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.incture.cpm.Entity.History;
 import com.incture.cpm.Entity.Talent;
 import com.incture.cpm.Entity.UnauthorizedUser;
 import com.incture.cpm.Entity.User;
@@ -75,13 +76,16 @@ public class UserService {
             newUser.setInctureId(inctureId);
             newUser.setTalentName(talentName);
             newUser.setStatus("Pending");
-            unauthorizedUserRepo.save(newUser);
 
-            historyService.logHistory(
-                    newUser.getId().toString(),
-                    "UnauthorizedUser",
-                    "New User Access Request by: " + email + " on " + new Date().toString(),
-                    email);
+            History history = new History();
+            history.setEntityId(newUser.getId().toString());
+            history.setEntityType("UnauthorizedUser");
+            history.setLogEntry("New User Access Request by: " + email + " on " + new Date().toString());
+            history.setTimestamp(new Date());
+            history.setUserName(email);
+
+            newUser.getAuthenticationHistory().add(history);
+            unauthorizedUserRepo.save(newUser);
 
             return "UnauthorizedUser";
         }

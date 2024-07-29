@@ -60,7 +60,7 @@ public class UnauthorizedUserController {
     @Operation(summary = "Get all user history", description = "Retrieve a list of all user history entries.")
     @GetMapping("/getAllUserHistory")
     public ResponseEntity<?> getAllUserHistory(){
-        return ResponseEntity.ok(historyService.getAllUserHistory("User"));
+        return ResponseEntity.ok(historyService.getAllHistoryByEntityType("User"));
     }
 
     @Operation(summary = "Register a new SuperAdmin", description = "Register a new SuperAdmin with the specified details.")

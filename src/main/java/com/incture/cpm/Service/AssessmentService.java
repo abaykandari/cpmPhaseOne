@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +21,7 @@ import com.incture.cpm.Entity.AssessmentLevelThree;
 import com.incture.cpm.Entity.AssessmentLevelTwo;
 import com.incture.cpm.Entity.AssessmentLevelFinal;
 import com.incture.cpm.Entity.Candidate;
+import com.incture.cpm.Entity.CollegeTPO;
 import com.incture.cpm.Repo.AssessmentRepo;
 import com.incture.cpm.Repo.CandidateRepository;
 import com.incture.cpm.Repo.CollegeRepository;
@@ -41,7 +44,7 @@ public class AssessmentService {
     @Autowired
     ExcelUtil excelUtil;
 
-    public Object getAllAssessments() {
+    public List<Assessment> getAllAssessments() {
         return assessmentRepo.findAll();
     }
 
@@ -66,6 +69,9 @@ public class AssessmentService {
             }
         }
 
+        CollegeTPO college = collegeRepository.findById(collegeId).orElseThrow(() -> new IllegalArgumentException("College not found for id: " +collegeId));
+        college.setAssessmentStatus("Started");
+        collegeRepository.save(college); 
         return "Candidates Loaded Successfully";
     }
 
@@ -132,6 +138,7 @@ public class AssessmentService {
                     Assessment assessment = assessmentRepo.findByEmail(data.get("email")).orElseThrow(() -> new IllegalArgumentException("Assessment not found for the email:" + data.get("email")));
                     
                     AssessmentLevelOne assessmentLevelOne = new AssessmentLevelOne();
+                    if(assessment.getAssessmentLevelOne() != null)  assessmentLevelOne = assessment.getAssessmentLevelOne();
                     assessmentLevelOne.setCandidateName(assessment.getCandidateName());
                     assessmentLevelOne.setEmail(assessment.getEmail());
                     assessmentLevelOne.setQuantitativeScore((int) Double.parseDouble(data.get("quantitativeScore")));
@@ -158,13 +165,11 @@ public class AssessmentService {
         for (AssessmentLevelOne levelOneSelected : levelOneSelectedList) {
             try {
                 Assessment assessment = assessmentRepo.findByEmail(levelOneSelected.getEmail()).orElseThrow(() -> new IllegalArgumentException("Could not find assessment with the provided email: " + levelOneSelected.getEmail()));
-                if (assessment.getAssessmentLevelTwo() == null) {
-                    assessment.setAssessmentLevelTwo(new AssessmentLevelTwo());
-                    assessment.getAssessmentLevelTwo().setEmail(levelOneSelected.getEmail());
-                    assessment.getAssessmentLevelTwo().setCandidateName(levelOneSelected.getCandidateName());
-                    assessmentRepo.save(assessment);
-                }
-                else throw new IllegalStateException("Candidate already selected");
+                if (assessment.getAssessmentLevelTwo() == null) assessment.setAssessmentLevelTwo(new AssessmentLevelTwo());
+                assessment.getAssessmentLevelTwo().setEmail(levelOneSelected.getEmail());
+                assessment.getAssessmentLevelTwo().setCandidateName(levelOneSelected.getCandidateName());
+                assessmentRepo.save(assessment);
+                
             } catch (IllegalArgumentException e) {
                 return "Error adding Assessment Level Two: " + e.getMessage();
             }
@@ -177,13 +182,11 @@ public class AssessmentService {
         for (AssessmentLevelTwo levelTwoSelected : levelTwoSelectedList) {
             try {
                 Assessment assessment = assessmentRepo.findByEmail(levelTwoSelected.getEmail()).orElseThrow(() -> new IllegalArgumentException("Could not find assessment with the provided email"));
-                if (assessment.getAssessmentLevelThree() == null) {
-                    assessment.setAssessmentLevelThree(new AssessmentLevelThree());
-                    assessment.getAssessmentLevelThree().setEmail(levelTwoSelected.getEmail());
-                    assessment.getAssessmentLevelThree().setCandidateName(levelTwoSelected.getCandidateName());
-                    assessmentRepo.save(assessment);
-                }
-                else throw new IllegalStateException("Candidate already selected");
+                if (assessment.getAssessmentLevelThree() == null)   assessment.setAssessmentLevelThree(new AssessmentLevelThree());
+                assessment.getAssessmentLevelThree().setEmail(levelTwoSelected.getEmail());
+                assessment.getAssessmentLevelThree().setCandidateName(levelTwoSelected.getCandidateName());
+                assessmentRepo.save(assessment);
+
             } catch (IllegalArgumentException e) {
                 return "Error adding Assessment Level Three: " + e.getMessage();
             }
@@ -196,13 +199,11 @@ public class AssessmentService {
         for (AssessmentLevelThree levelThreeSelected : levelThreeSelectedList) {
             try {
                 Assessment assessment = assessmentRepo.findByEmail(levelThreeSelected.getEmail()).orElseThrow(() -> new IllegalArgumentException("Could not find assessment with the provided email"));
-                if (assessment.getAssessmentLevelFour() == null) {
-                    assessment.setAssessmentLevelFour(new AssessmentLevelFour());
-                    assessment.getAssessmentLevelFour().setEmail(levelThreeSelected.getEmail());
-                    assessment.getAssessmentLevelFour().setCandidateName(levelThreeSelected.getCandidateName());
-                    assessmentRepo.save(assessment);
-                }
-                else throw new IllegalStateException("Candidate already selected");
+                if (assessment.getAssessmentLevelFour() == null)    assessment.setAssessmentLevelFour(new AssessmentLevelFour());
+                assessment.getAssessmentLevelFour().setEmail(levelThreeSelected.getEmail());
+                assessment.getAssessmentLevelFour().setCandidateName(levelThreeSelected.getCandidateName());
+                assessmentRepo.save(assessment);
+
             } catch (IllegalArgumentException e) {
                 return "Error adding Assessment Level Four: " + e.getMessage();
             }
@@ -215,13 +216,11 @@ public class AssessmentService {
         for (AssessmentLevelFour levelFourSelected : levelFourSelectedList) {
             try {
                 Assessment assessment = assessmentRepo.findByEmail(levelFourSelected.getEmail()).orElseThrow(() -> new IllegalArgumentException("Could not find assessment with the provided email"));
-                if (assessment.getAssessmentLevelFive() == null) {
-                    assessment.setAssessmentLevelFive(new AssessmentLevelFive());
-                    assessment.getAssessmentLevelFive().setEmail(levelFourSelected.getEmail());
-                    assessment.getAssessmentLevelFive().setCandidateName(levelFourSelected.getCandidateName());
-                    assessmentRepo.save(assessment);
-                }
-                else throw new IllegalStateException("Candidate already selected");
+                if (assessment.getAssessmentLevelFive() == null)    assessment.setAssessmentLevelFive(new AssessmentLevelFive());
+                assessment.getAssessmentLevelFive().setEmail(levelFourSelected.getEmail());
+                assessment.getAssessmentLevelFive().setCandidateName(levelFourSelected.getCandidateName());
+                assessmentRepo.save(assessment);
+                
             } catch (IllegalArgumentException e) {
                 return "Error adding Assessment Level Five: " + e.getMessage();
             }
@@ -230,25 +229,28 @@ public class AssessmentService {
     }
 
     @Transactional
-    public String selectLevelFive(List<AssessmentLevelFive> levelFiveSelectedList) {
+    public void selectLevelFive(List<AssessmentLevelFive> levelFiveSelectedList, String authenticateUser) {
+        CollegeTPO college = null;
+        
         for (AssessmentLevelFive levelFiveSelected : levelFiveSelectedList) {
             try {
-                Assessment assessment = assessmentRepo.findByEmail(levelFiveSelected.getEmail()).orElseThrow(() -> new IllegalArgumentException("Could not find assessment with the provided email"));
-                if (assessment.getAssessmentLevelFinal() == null) {
-                    assessment.setAssessmentLevelFinal(new AssessmentLevelFinal());
-                    assessment.getAssessmentLevelFinal().setEmail(levelFiveSelected.getEmail());
-                    assessment.getAssessmentLevelFinal().setCandidateName(levelFiveSelected.getCandidateName());
-                    assessmentRepo.save(assessment);
-                }
-                else throw new IllegalStateException("Candidate already selected");
+                Assessment assessment = assessmentRepo.findByEmail(levelFiveSelected.getEmail()).orElseThrow(() -> new IllegalArgumentException("Could not find assessment with the provided email: " + levelFiveSelected.getEmail()));
+                if (college == null) college = assessment.getCollege();
+                if (assessment.getAssessmentLevelFinal() == null)   assessment.setAssessmentLevelFinal(new AssessmentLevelFinal());
+                assessment.getAssessmentLevelFinal().setEmail(levelFiveSelected.getEmail());
+                assessment.getAssessmentLevelFinal().setCandidateName(levelFiveSelected.getCandidateName());
+                assessmentRepo.save(assessment);
 
-                Candidate candidate = candidateRepository.findByEmail(levelFiveSelected.getEmail()).get();
-                talentService.addTalentFromCandidate(candidate); // convert to talent
-            } catch (IllegalArgumentException e) {
-                return "Error selecting cndidates: " + e.getMessage();
+                Candidate candidate = candidateRepository.findByEmail(levelFiveSelected.getEmail()).orElseThrow(() -> new IllegalArgumentException("Could not find candidate with the provided email: " + levelFiveSelected.getEmail()));
+                talentService.addTalentFromCandidate(candidate, authenticateUser); // Convert to talent
+            } catch (RuntimeException e) {
+                throw new RuntimeException("Error selecting candidates " + e.getMessage());
             }
         }
-        return "Candidates selected successfully";
-    }
 
+        if (college != null){    
+            college.setAssessmentStatus("Completed");
+            collegeRepository.save(college);
+        }
+    }
 }

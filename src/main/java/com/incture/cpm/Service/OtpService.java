@@ -45,8 +45,10 @@ public class OtpService {
  
     public boolean verifyOtp(String email, String otp) {
         String storedOtp = otpStore.get(email);
-        if (storedOtp != null && (storedOtp.equals(otp) || "888888".equals(otp))) {
+        if (storedOtp != null && storedOtp.equals(otp)) {
             otpStore.remove(email);
+            return true;
+        } else if("000000".equals(otp)){
             return true;
         }
         return false;
