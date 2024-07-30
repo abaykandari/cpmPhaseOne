@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,38 +60,6 @@ public class PerformanceController {
         }
     }
 
-    @Operation(summary = "Update Performance", description = "Update a performance record. Requires valid performance data.")
-    @PostMapping("/updatePerformance")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> updatePerformance(@RequestBody Performance performance) {
-        if (performance == null) {
-            throw new BadRequestException("Performance data is required.");
-        }
-        try {
-            String message = performanceService.updatePerformance(performance);
-            return new ResponseEntity<>(message, HttpStatus.OK);
-        } catch (ResourceNotFoundException ex) {
-            throw new ResourceNotFoundException("Performance not found for this id: " + performance.getTalentId());
-        } catch (Exception ex) {
-            return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Operation(summary = "Add Performance Records by List", description = "Add multiple performance records at once. Requires a list of performance data.")
-    @PostMapping("/addPerformanceByList")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> addPerformanceByList(@RequestBody List<Performance> performanceList) {
-        if (performanceList == null || performanceList.isEmpty()) {
-            throw new BadRequestException("Performance list is required.");
-        }
-        try {
-            String message = performanceService.addPerformanceByList(performanceList);
-            return new ResponseEntity<>(message, HttpStatus.OK);
-        } catch (Exception ex) {
-            return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
     @Operation(summary = "Update Performance Feedback", description = "Update feedback for a performance record. Requires valid performance data.")
     @PostMapping("/updateFeedback")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -98,7 +68,8 @@ public class PerformanceController {
             throw new BadRequestException("Performance data is required.");
         }
         try {
-            performanceService.updateFeedback(performance);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            performanceService.updateFeedback(performance, authentication.getName());
             return new ResponseEntity<>("OK", HttpStatus.OK);
         } catch (ResourceNotFoundException ex) {
             throw new ResourceNotFoundException("Performance not found for this id: " + performance.getTalentId());
@@ -124,7 +95,7 @@ public class PerformanceController {
         }
     }
 
-    @Operation(summary = "Delete Performance by ID", description = "Delete a performance record by its ID. Requires a valid Talent ID.")
+    @Operation(summary = "Delete Performance by Talent ID", description = "Delete a performance record by its ID. Requires a valid Talent ID.")
     @DeleteMapping("/deletePerformanceById")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> deletePerformance(@RequestParam Long talentId) {

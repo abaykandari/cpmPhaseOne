@@ -14,6 +14,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.incture.cpm.Dto.TalentSummaryDto;
-import com.incture.cpm.Entity.Candidate;
 import com.incture.cpm.Entity.Talent;
 import com.incture.cpm.Exception.ResourceNotFoundException;
 import com.incture.cpm.Service.TalentService;
@@ -44,11 +46,14 @@ public class TalentController {
 
     @Autowired
     private TalentService talentService;
-
+    
     @PostMapping("/createtalent")
+    @Transactional
     public ResponseEntity<Talent> createTalent(@RequestBody Talent talent) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
         Talent createdTalent = talentService.createTalent(talent);
-        performanceService.addPerformanceWithTalent(createdTalent);
+        performanceService.addPerformanceWithTalent(createdTalent, authentication.getName());
         return new ResponseEntity<>(createdTalent, HttpStatus.CREATED);
     }
 
@@ -60,7 +65,6 @@ public class TalentController {
         talent.setMarksheetsSemwise(marksheetPdf);
         Talent updatedTalent = talentService.updateTalent(talent, talentId);
         if (updatedTalent != null) {
-            performanceService.editTalentDetails(talent);
             return new ResponseEntity<>(updatedTalent, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -74,21 +78,9 @@ public class TalentController {
         talent.setResume(resumePdf);
         Talent updatedTalent = talentService.updateTalent(talent, talentId);
         if (updatedTalent != null) {
-            performanceService.editTalentDetails(talent);
             return new ResponseEntity<>(updatedTalent, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
-    @PostMapping("/addtalentfromcandidate")
-    public ResponseEntity<Talent> addTalentFromCandidate(@RequestBody Candidate candidate) {
-        Talent newtalent = talentService.addTalentFromCandidate(candidate);
-        if (newtalent == null) {
-            return new ResponseEntity<>(newtalent, HttpStatus.BAD_REQUEST);
-        }
-        if (performanceService.addPerformanceWithTalent(newtalent) == "Performance saved successfully")
-            return new ResponseEntity<>(newtalent, HttpStatus.CREATED);
-        return new ResponseEntity<>(newtalent, HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("/alltalent")
@@ -108,10 +100,11 @@ public class TalentController {
 
     @PutMapping("/updatetalent/{talentId}")
     public ResponseEntity<Talent> updateTalent(@RequestBody Talent talent, @PathVariable Long talentId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Talent updatedTalent = talentService.updateTalent(talent, talentId);
 
         if (updatedTalent != null) {
-            performanceService.editTalentDetails(updatedTalent);
+            performanceService.editTalentDetails(updatedTalent, authentication.getName());
             return new ResponseEntity<>(updatedTalent, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);

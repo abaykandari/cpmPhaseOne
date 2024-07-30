@@ -59,4 +59,6 @@ public class Talent {
     private String exitReason = "NA";
     private String exitComment;
 
+/*     @OneToOne(mappedBy = "talent")
+    private Performance performance; */
 }
