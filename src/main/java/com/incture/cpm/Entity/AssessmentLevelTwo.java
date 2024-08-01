@@ -25,7 +25,8 @@ public class AssessmentLevelTwo {
     private String email;
     private String candidateName;
     
-    private double problemStatement;
+    //10 marks each
+    private double problemStatement; 
     private double processWorkflow;
     private double useOfAlgorithms;
     private double contentTotal; // total of the above four scores

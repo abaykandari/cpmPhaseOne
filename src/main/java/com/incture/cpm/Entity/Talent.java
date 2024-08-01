@@ -28,8 +28,8 @@ public class Talent {
     private String email;
     private String phoneNumber;
     private String alternateNumber;
-    private double tenthPercent;
-    private double twelthPercent;
+    private double tenthPercent=0.0;
+    private double twelthPercent=0.0;
 
     private Blob marksheetsSemwise;
 
@@ -44,10 +44,10 @@ public class Talent {
     private String talentEmploymentType;// intern/associate/soft engn. / product manager/ and others
     private String reportingManager;
     private String plOwner;
-    private String ekYear = "2024";
+    private String ekYear;
     private String talentCategory;// inperson / online
-    private double cgpaUndergrad;
-    private double cgpaMasters;
+    private double cgpaUndergrad=0.0;
+    private double cgpaMasters=0.0;
     private String officeLocation;
 
     // new field added
@@ -59,4 +59,6 @@ public class Talent {
     private String exitReason = "NA";
     private String exitComment;
 
+/*     @OneToOne(mappedBy = "talent")
+    private Performance performance; */
 }

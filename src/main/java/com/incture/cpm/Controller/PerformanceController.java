@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,19 +22,26 @@ import com.incture.cpm.Exception.BadRequestException;
 import com.incture.cpm.Exception.ResourceNotFoundException;
 import com.incture.cpm.Service.PerformanceService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/cpm/performance")
+@Tag(name = "Performance", description = "Endpoints for managing performance records")
 public class PerformanceController {
+
     @Autowired
     private PerformanceService performanceService;
 
+    @Operation(summary = "Get All Performances", description = "Retrieve all performance records. Accessible only to admins.")
     @GetMapping("/getAllPerformance")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public List<Performance> getAllPerformances() {
         return performanceService.getAllPerformances();
     }
-    
+
+    @Operation(summary = "Get Performance by ID", description = "Retrieve a performance record by its ID. Requires a valid Talent ID.")
     @GetMapping("/getPerformanceById")
     public ResponseEntity<Performance> getPerformanceById(@RequestParam Long talentId) {
         if (talentId == null) {
@@ -51,36 +60,7 @@ public class PerformanceController {
         }
     }
 
-    @PostMapping("/updatePerformance")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> updatePerformance(@RequestBody Performance performance) {
-        if (performance == null) {
-            throw new BadRequestException("Performance data is required.");
-        }
-        try {
-            String message = performanceService.updatePerformance(performance);
-            return new ResponseEntity<>(message, HttpStatus.OK);
-        } catch (ResourceNotFoundException ex) {
-            throw new ResourceNotFoundException("Performance not found for this id: " + performance.getTalentId());
-        } catch (Exception ex) {
-            return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @PostMapping("/addPerformanceByList")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> addPerformanceByList(@RequestBody List<Performance> performanceList) {
-        if (performanceList == null || performanceList.isEmpty()) {
-            throw new BadRequestException("Performance list is required.");
-        }
-        try {
-            String message = performanceService.addPerformanceByList(performanceList);
-            return new ResponseEntity<>(message, HttpStatus.OK);
-        } catch (Exception ex) {
-            return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
+    @Operation(summary = "Update Performance Feedback", description = "Update feedback for a performance record. Requires valid performance data.")
     @PostMapping("/updateFeedback")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> updateFeedback(@RequestBody Performance performance) {
@@ -88,7 +68,8 @@ public class PerformanceController {
             throw new BadRequestException("Performance data is required.");
         }
         try {
-            performanceService.updateFeedback(performance);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            performanceService.updateFeedback(performance, authentication.getName());
             return new ResponseEntity<>("OK", HttpStatus.OK);
         } catch (ResourceNotFoundException ex) {
             throw new ResourceNotFoundException("Performance not found for this id: " + performance.getTalentId());
@@ -97,6 +78,7 @@ public class PerformanceController {
         }
     }
 
+    @Operation(summary = "Delete Performance Record", description = "Delete a performance record. Requires valid performance data.")
     @DeleteMapping("/deletePerformance")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> deletePerformance(@RequestBody Performance performance) {
@@ -113,6 +95,7 @@ public class PerformanceController {
         }
     }
 
+    @Operation(summary = "Delete Performance by Talent ID", description = "Delete a performance record by its ID. Requires a valid Talent ID.")
     @DeleteMapping("/deletePerformanceById")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> deletePerformance(@RequestParam Long talentId) {

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.incture.cpm.Dto.TalentSummaryDto;
 import com.incture.cpm.Entity.Candidate;
@@ -42,11 +43,15 @@ public class TalentService {
     @Autowired
     private ManagerRepository managerRepository;
 
-    public Talent addTalentFromCandidate(Candidate candidate) {
-        Talent existingtTalent = talentRepository.findByCandidateId(candidate.getCandidateId());
-        if (existingtTalent != null) {
-            return null;
-        }
+    @Autowired 
+    PerformanceService performanceService;
+
+    @Transactional
+    public void addTalentFromCandidate(Candidate candidate, String authenticatedUser) {
+        Talent existingTalent = talentRepository.findByCandidateId(candidate.getCandidateId());
+        //if (existingTalent != null){performanceService.addPerformanceWithTalent(existingTalent, authenticatedUser); return ;}
+        if (existingTalent != null) return ;
+
         Talent newTalent = new Talent();
         newTalent.setCandidateId(candidate.getCandidateId());
         newTalent.setTalentName(candidate.getCandidateName());
@@ -66,7 +71,9 @@ public class TalentService {
         newTalent.setDob(candidate.getDOB());
         newTalent.setCgpaUndergrad(candidate.getCgpaUndergrad());
         newTalent.setCgpaMasters(candidate.getCgpaMasters());
-        return talentRepository.save(newTalent);
+        talentRepository.save(newTalent);
+        
+        performanceService.addPerformanceWithTalent(newTalent, authenticatedUser);
     }
 
     public Talent createTalent(Talent talent) {

@@ -50,16 +50,18 @@ public class CollegeTPO {
     @Column
     private double compensation;
     @JsonIgnore
-@OneToOne(mappedBy = "collegeTPO", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
-private InterviewerScheduling interviewerSchedulings;
+    @OneToOne(mappedBy = "collegeTPO", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
+    private InterviewerScheduling interviewerSchedulings;
 
-    //mapping
+        //mapping
 
-//    @OneToMany(mappedBy = "candidateCollegeId", cascade = CascadeType.ALL)
-//    @JoinColumn(name = "candidateId")
-//    private List<Candidate> candidates;
+    //    @OneToMany(mappedBy = "candidateCollegeId", cascade = CascadeType.ALL)
+    //    @JoinColumn(name = "candidateId")
+    //    private List<Candidate> candidates;
 
     //@JsonIgnore
     @OneToMany(mappedBy = "college", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Assessment> assessmentList = new ArrayList<>();
+
+    private String assessmentStatus = "Not Started"; //Started , Not Started, Completed
 }

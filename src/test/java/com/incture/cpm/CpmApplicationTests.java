@@ -1,4 +1,4 @@
-package com.example.cpm;
+package com.incture.cpm;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
