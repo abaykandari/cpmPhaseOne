@@ -4,28 +4,28 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.incture.cpm.Entity.AssessmentLevelOne;
 import com.incture.cpm.Entity.AssessmentLevelTwo;
 import com.incture.cpm.Entity.AssessmentLevelThree;
-import com.incture.cpm.Entity.AssessmentLevelFour;
-import com.incture.cpm.Entity.AssessmentLevelFive;
+import com.incture.cpm.Entity.AssessmentLevelOptional;
 import com.incture.cpm.Service.AssessmentService;
 import com.incture.cpm.Util.ExcelUtil;
 
@@ -33,7 +33,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/cpm2/assessment")
+@RequestMapping("/cpm/assessment")
 @CrossOrigin("*")
 @Tag(name = "Candidate Assessment", description = "Endpoints for managing candidate assessments")
 public class AssessmentController {
@@ -44,135 +44,196 @@ public class AssessmentController {
     @Autowired
     private ExcelUtil excelUtil;
 
-
-    @Operation(summary = "Load Candiates Data", description = "Load candidates data and start their assessment")
-    @PostMapping("/loadCandidates")
-    public ResponseEntity<?> loadCandidates(@RequestParam int collegeId){
-        return new ResponseEntity<>(assessmentService.loadCandidates(collegeId), HttpStatus.OK);
-    }
-
-    @Operation(summary = "Upload Level One Data", description = "Upload an Excel file for Level One assessments and save data to the database.")
-    @PostMapping("/uploadLevelOne")
-    public ResponseEntity<?> uploadLevelOne(@RequestParam MultipartFile file, @RequestParam int collegeId){
-        if (file.isEmpty()) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please upload an Excel file");
-        
-        try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
-            this.assessmentService.uploadLevelOne(file, collegeId);
-            return ResponseEntity.ok(Map.of("message", "File is uploaded and data is saved to db"));
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please upload a valid Excel file");
-        } 
-    }
-
-    @Operation(summary = "Get Assessments by College ID", description = "Retrieve assessments by the specified college ID.")
-    @GetMapping("/getAssessmentByCollegeId")
-    public ResponseEntity<?> getAssessmentByCollegeId(@RequestParam int collegeId){
-        return new ResponseEntity<>(assessmentService.getAssessmentByCollegeId(collegeId), HttpStatus.OK);
-    }
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Operation(summary = "Get All Assessments", description = "Retrieve all assessments.")
     @GetMapping("/getAllAssessments")
+    //not to be used on frontend
     public ResponseEntity<?> getAllAssessments(){
         return new ResponseEntity<>(assessmentService.getAllAssessments(), HttpStatus.OK);
     }
 
-    @Operation(summary = "Select Level One Assessments", description = "Select assessments for Level One.")
-    @PostMapping("/selectLevelOne")
-    public ResponseEntity<String> selectLevelOne(@RequestBody List<AssessmentLevelOne> levelOneSelectedList){
-        String message = assessmentService.selectLevelOne(levelOneSelectedList);
-        return new ResponseEntity<>(message, HttpStatus.OK);
+    @Operation(summary = "Get Assessments by Ek Year", description = "Retrieve assessments by the specified Ek Year")
+    @GetMapping("/getAllAssessmentByEkYear")
+    public ResponseEntity<?> getAllAssessmentByEkYear(@RequestParam String ekYear){
+        return new ResponseEntity<>(assessmentService.getAllAssessmentByEkYear(ekYear), HttpStatus.OK);
     }
 
-    @Operation(summary = "Select Level Two Assessments", description = "Select assessments for Level Two.")
-    @PostMapping("/selectLevelTwo")
-    public ResponseEntity<String> selectLevelTwo(@RequestBody List<AssessmentLevelTwo> levelTwoSelectedList){
-        String message = assessmentService.selectLevelTwo(levelTwoSelectedList);
-        return new ResponseEntity<>(message, HttpStatus.OK);
+    @Operation(summary = "Get Assessment or Specific Level by ID", description = "Retrieve an assessment or a specific level of an assessment by ID.")
+    @GetMapping("/getAssessmentLevel")
+    public ResponseEntity<?> getAssessmentLevel(
+            @RequestParam(required = false) String level,
+            @RequestParam long assessmentId) {
+        try {
+            if (level == null)  return new ResponseEntity<>(assessmentService.getAssessmentById(assessmentId), HttpStatus.OK);
+            
+            switch (level) {
+                case "levelOne":
+                    return new ResponseEntity<>(assessmentService.getAssessmentLevelOneById(assessmentId), HttpStatus.OK);
+                case "levelTwo":
+                    return new ResponseEntity<>(assessmentService.getAssessmentLevelTwoById(assessmentId), HttpStatus.OK);
+                case "levelThree":
+                    return new ResponseEntity<>(assessmentService.getAssessmentLevelThreeById(assessmentId), HttpStatus.OK);
+                case "levelOptional":
+                    return new ResponseEntity<>(assessmentService.getAssessmentLevelOptionalById(assessmentId), HttpStatus.OK);
+                case "levelFinal":
+                    return new ResponseEntity<>(assessmentService.getAssessmentLevelFinalById(assessmentId), HttpStatus.OK);
+                default:
+                    return new ResponseEntity<>("Invalid level specified", HttpStatus.BAD_REQUEST);
+            }
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }    
+
+    @Operation(summary = "Load Candiates Data", description = "Load candidates data and start their assessment")
+    @PostMapping("/createAssessment")
+    public ResponseEntity<?> createAssessment(@RequestParam int collegeId){
+        try{
+            assessmentService.createAssessment(collegeId);
+            return new ResponseEntity<>("OK", HttpStatus.CREATED);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 
-    @Operation(summary = "Select Level Three Assessments", description = "Select assessments for Level Three.")
-    @PostMapping("/selectLevelThree")
-    public ResponseEntity<String> selectLevelThree(@RequestBody List<AssessmentLevelThree> levelThreeSelectedList){
-        String message = assessmentService.selectLevelThree(levelThreeSelectedList);
-        return new ResponseEntity<>(message, HttpStatus.OK);
+    @PostMapping("/uploadLevelExcel")
+    public ResponseEntity<String> uploadExcel(@RequestParam("file") MultipartFile file, @RequestParam long assessmentId, @RequestParam String level) {
+        try {
+            switch (level.toLowerCase()) {
+                case "levelone":
+                    assessmentService.uploadLevelOneExcel(file, assessmentId);
+                    break;
+                case "leveltwo":
+                    assessmentService.uploadLevelTwoExcel(file, assessmentId);
+                    break;
+                case "levelthree":
+                    assessmentService.uploadLevelThreeExcel(file, assessmentId);
+                    break;
+                case "leveloptional":
+                    assessmentService.uploadLevelOptionalExcel(file, assessmentId);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid level specified: " + level);
+            }
+            return new ResponseEntity<>("Upload successful", HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @Operation(summary = "Select Level Four Assessments", description = "Select assessments for Level Four.")
-    @PostMapping("/selectLevelFour")
-    public ResponseEntity<String> selectLevelFour(@RequestBody List<AssessmentLevelFour> levelFourSelectedList){
-        String message = assessmentService.selectLevelFour(levelFourSelectedList);
-        return new ResponseEntity<>(message, HttpStatus.OK);
+    @Operation(summary = "Update Assessment Level", description = "Update an assessment record for a specific level.")
+    @PutMapping("/updateAssessment")
+    public ResponseEntity<String> updateAssessment(
+            @RequestParam String level,
+            @RequestPart Object levelData,
+            @RequestParam long assessmentId) {
+        try {
+            switch (level.toLowerCase()) {
+                case "levelone":
+                    AssessmentLevelOne levelOne = objectMapper.convertValue(levelData, AssessmentLevelOne.class);
+                    assessmentService.updateLevel(levelOne, assessmentId);
+                    break;
+                case "leveltwo":
+                    AssessmentLevelTwo levelTwo = objectMapper.convertValue(levelData, AssessmentLevelTwo.class);
+                    assessmentService.updateLevel(levelTwo, assessmentId);
+                    break;
+                case "levelthree":
+                    AssessmentLevelThree levelThree = objectMapper.convertValue(levelData, AssessmentLevelThree.class);
+                    assessmentService.updateLevel(levelThree, assessmentId);
+                    break;
+                case "leveloptional":
+                    AssessmentLevelOptional levelOptional = objectMapper.convertValue(levelData, AssessmentLevelOptional.class);
+                    assessmentService.updateLevel(levelOptional, assessmentId);
+                    break;
+                default:
+                    return new ResponseEntity<>("Invalid level specified", HttpStatus.BAD_REQUEST);
+            }
+            return new ResponseEntity<>("OK", HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @PostMapping("/selectCandidates")
+    public ResponseEntity<String> selectCandidates(@RequestParam String level, @RequestParam long assessmentId, @RequestPart List<Object> selectionList) {
+        try {
+            switch (level.toLowerCase()) {
+                case "levelone":
+                    List<AssessmentLevelOne> levelOneSelectionList = objectMapper.convertValue(selectionList, new TypeReference<List<AssessmentLevelOne>>() {});
+                    assessmentService.selectLevelOneCandidates(levelOneSelectionList, assessmentId);
+                    break;
+                case "leveltwo":
+                    List<AssessmentLevelTwo> levelTwoSelectionList = objectMapper.convertValue(selectionList, new TypeReference<List<AssessmentLevelTwo>>() {});
+                    assessmentService.selectLevelTwoCandidates(levelTwoSelectionList, assessmentId);
+                    break;
+                case "levelthree":
+                    List<AssessmentLevelThree> levelThreeSelectionList = objectMapper.convertValue(selectionList, new TypeReference<List<AssessmentLevelThree>>() {});
+                    assessmentService.selectLevelThreeCandidates(levelThreeSelectionList, assessmentId);
+                    break;
+                case "leveloptional":
+                    List<AssessmentLevelOptional> levelOptionalSelectionList = objectMapper.convertValue(selectionList, new TypeReference<List<AssessmentLevelOptional>>() {});
+                    assessmentService.selectLevelOptionalCandidates(levelOptionalSelectionList, assessmentId);
+                    break;
+                default:
+                    return new ResponseEntity<>("Invalid level specified", HttpStatus.BAD_REQUEST);
+            }
+            return new ResponseEntity<>("Candidates selected successfully", HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @Operation(summary = "Select Level Five Assessments", description = "Select assessments for Level Five.")
-    @PostMapping("/selectLevelFive")
-    public ResponseEntity<?> selectLevelFive(@RequestBody List<AssessmentLevelFive> levelFiveSelectedList){
+    @Operation(summary = "Mark Assessment Level as Complete", description = "Mark a specified level of an assessment as complete.")
+    @PostMapping("/markLevelAsComplete")
+    public ResponseEntity<String> markLevelAsComplete(@RequestParam String level, @RequestParam long assessmentId) {
+        try {
+            switch (level) {
+                case "levelone":
+                    assessmentService.markLevelOneAsComplete(assessmentId);
+                    break;
+                case "leveltwo":
+                    assessmentService.markLevelTwoAsComplete(assessmentId);
+                    break;
+                case "levelthree":
+                    assessmentService.markLevelThreeAsComplete(assessmentId);
+                    break;
+                case "leveloptional":
+                    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                    assessmentService.markLevelOptionalAsComplete(assessmentId, authentication.getName());
+                default:
+                    return new ResponseEntity<>("Invalid level specified", HttpStatus.BAD_REQUEST);
+            }
+            return new ResponseEntity<>("OK", HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/skipOptionalLevel")
+    public ResponseEntity<String> skipOptionalLevel(@RequestParam long assessmentId){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        assessmentService.selectLevelFive(levelFiveSelectedList, authentication.getName());
-        return new ResponseEntity<>("Candidates selected successfully", HttpStatus.OK);
-    }
-
-    @Operation(summary = "Update Level One Assessment", description = "Update a Level One assessment record.")
-    @PutMapping("/updateLevelOne")
-    public ResponseEntity<String> updateLevelOne(@RequestBody AssessmentLevelOne levelOne){
-        try {
-            String message = assessmentService.updateLevelOne(levelOne);
-            return new ResponseEntity<>(message, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
+        try{
+            assessmentService.skipOptionalLevel(assessmentId, authentication.getName());
+            return new ResponseEntity<>("OK", HttpStatus.OK);
+        } catch (IllegalStateException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Operation(summary = "Update Level Two Assessment", description = "Update a Level Two assessment record.")
-    @PutMapping("/updateLevelTwo")
-    public ResponseEntity<String> updateLevelTwo(@RequestBody AssessmentLevelTwo levelTwo){
-        try {
-            String message = assessmentService.updateLevelTwo(levelTwo);
-            return new ResponseEntity<>(message, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Operation(summary = "Update Level Three Assessment", description = "Update a Level Three assessment record.")
-    @PutMapping("/updateLevelThree")
-    public ResponseEntity<String> updateLevelThree(@RequestBody AssessmentLevelThree levelThree){
-        try {
-            String message = assessmentService.updateLevelThree(levelThree);
-            return new ResponseEntity<>(message, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Operation(summary = "Update Level Four Assessment", description = "Update a Level Four assessment record.")
-    @PutMapping("/updateLevelFour")
-    public ResponseEntity<String> updateLevelFour(@RequestBody AssessmentLevelFour levelFour){
-        try {
-            String message = assessmentService.updateLevelFour(levelFour);
-            return new ResponseEntity<>(message, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Operation(summary = "Update Level Five Assessment", description = "Update a Level Five assessment record.")
-    @PutMapping("/updateLevelFive")
-    public ResponseEntity<String> updateLevelFive(@RequestBody AssessmentLevelFive levelFive){
-        try {
-            String message = assessmentService.updateLevelFive(levelFive);
-            return new ResponseEntity<>(message, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
+        } catch (Exception e){
             return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -182,4 +243,17 @@ public class AssessmentController {
     public ResponseEntity<List<Map<String, String>>> readExcel(@RequestParam("file") MultipartFile file) throws IOException {
         return ResponseEntity.ok(excelUtil.readExcelFile(file));
     }
+
+    @DeleteMapping("/deleteAssessmentById")
+    public ResponseEntity<?> deleteAssessmentById(@RequestParam long assessmentId){
+        assessmentService.deleteAssessmentById(assessmentId);
+        return new ResponseEntity<>("Assessment deleted successfully", HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping("/truncate")
+    public ResponseEntity<?> truncateAssessments(){
+        assessmentService.truncateAssessments();
+        return new ResponseEntity<>("OK", HttpStatus.NO_CONTENT);
+    }
+
 }

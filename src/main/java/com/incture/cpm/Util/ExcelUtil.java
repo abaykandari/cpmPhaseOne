@@ -97,8 +97,8 @@ public class ExcelUtil {
 
             workbook.close();
 
-            // Check if the headers match the expected format
-            return headers.equals(expectedHeaders);
+            // Check if all expected headers are present
+            return headers.containsAll(expectedHeaders);
         }
 
         workbook.close();

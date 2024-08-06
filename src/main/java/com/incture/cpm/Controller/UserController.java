@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.incture.cpm.Dto.UserDto;
 import com.incture.cpm.Entity.User;
 import com.incture.cpm.Service.CustomUserDetailsService;
 import com.incture.cpm.Service.OtpService;
@@ -73,7 +72,7 @@ public class UserController {
         if (authentication != null && authentication.isAuthenticated()) {
             String email = authentication.getName();
             User user = userService.findByEmail(email);
-            return ResponseEntity.ok(getUserDetails(user));
+            return ResponseEntity.ok(user);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
         }
@@ -149,7 +148,7 @@ public class UserController {
             headers.set("Authorization", jwt);
 
             log.info("Login successful with jwt : {}", jwt);
-            return new ResponseEntity<>(getUserDetails(userService.findByEmail(email)), headers, HttpStatus.OK);
+            return new ResponseEntity<>(userService.findByEmail(email), headers, HttpStatus.OK);
         } catch (Exception e) {
             log.error("Exception occurred while createAuthenticationToken ", e);
             return new ResponseEntity<>("Incorrect username or password", HttpStatus.BAD_REQUEST);
@@ -178,21 +177,6 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
-    }
-
-    @Operation(summary = "Get user details", description = "Retrieve user details based on the user entity.")
-    @GetMapping("/returnUser")
-    public UserDto getUserDetails(User user) {
-        UserDto userDto = new UserDto();
-        userDto.setId(user.getId());
-        userDto.setEmail(user.getEmail());
-        userDto.setRoles(user.getRoles());
-        userDto.setTalentId(user.getTalentId());
-        userDto.setTalentName(user.getTalentName());
-        userDto.setInctureId(user.getInctureId());
-        userDto.setPhoto(user.getPhoto());
-        // Set other necessary fields
-        return userDto;
     }
 
     @Operation(summary = "Delete user", description = "Delete a user by ID. Ensure only admins can perform this operation.")

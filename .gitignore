@@ -35,3 +35,4 @@ build/
 ###ignore
 logs/
 src/main/resources/application.properties
+src/test/

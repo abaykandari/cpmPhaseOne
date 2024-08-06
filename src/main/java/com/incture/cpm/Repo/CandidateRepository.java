@@ -13,4 +13,7 @@ public interface CandidateRepository extends JpaRepository<Candidate, Long> {
     Optional<Candidate> findByCollegeIdAndEmail(int collegeId, String email);
 
     List<Candidate> findByCollegeId(int collegeId);
+
+    List<Candidate> findByCollegeIdAndEkYear(int collegeId, String ekYear);
+    List<Candidate> findByEmailIn(List<String> emails);
 }

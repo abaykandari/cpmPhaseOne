@@ -72,8 +72,6 @@ public class CandidateController {
 
             this.candidateService.feedCandidateData(file, collegeId);
             return ResponseEntity.ok(Map.of("message", "File is uploaded and data is saved to db"));
-
-
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please upload excel file ");
     }

@@ -57,7 +57,6 @@ public class ProjectsService {
         return projectsRepository.save(project);
     }
 
-
     public Optional<Projects> updateProject(Long projectId, String projectTitle, String projectDescription,
             MultipartFile descriptionFile) throws SQLException, IOException {
         return projectsRepository.findById(projectId).map(project -> {

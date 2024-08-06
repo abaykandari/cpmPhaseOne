@@ -1,6 +1,5 @@
 package com.incture.cpm.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -12,9 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.incture.cpm.Dto.UnauthorizedUserDto;
-import com.incture.cpm.Dto.UnauthorizedUserWithHistory;
-import com.incture.cpm.Entity.History;
 import com.incture.cpm.Entity.UnauthorizedUser;
 import com.incture.cpm.Entity.User;
 import com.incture.cpm.Repo.UnauthorizedUserRepo;
@@ -34,25 +30,11 @@ public class UnauthorizedUserService {
     @Autowired
     private HistoryService historyService;
 
-    public List<UnauthorizedUserWithHistory> getAllRequests() {
+    public List<UnauthorizedUser> getAllRequests() {
         List<UnauthorizedUser> users = unauthorizedUserRepository.findAll();
-        List<UnauthorizedUserWithHistory> userWithHistories = new ArrayList<>();
+        for (UnauthorizedUser user : users) user.setPassword(null);
 
-        for (UnauthorizedUser user : users) {
-            UnauthorizedUserDto userDto = new UnauthorizedUserDto();
-            userDto.setId(user.getId());
-            userDto.setEmail(user.getEmail());
-            userDto.setRoles(user.getRoles());
-            userDto.setTalentName(user.getTalentName());
-            userDto.setInctureId(user.getInctureId());
-            userDto.setStatus(user.getStatus());
-            userDto.setAuthenticationHistory(user.getAuthenticationHistory());
-
-            List<History> history = historyService.getAllHistoryByEntityIdAndEntityType(user.getId().toString(), "UnauthorizedUser");
-            userWithHistories.add(new UnauthorizedUserWithHistory(userDto, history));
-        }
-
-        return userWithHistories;
+        return users;
     }
     
     @Transactional

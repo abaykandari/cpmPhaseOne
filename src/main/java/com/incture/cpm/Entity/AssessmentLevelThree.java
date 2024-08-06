@@ -29,9 +29,11 @@ public class AssessmentLevelThree {
     private double analyticalSkills;
     private double logicalFlow;
 
-    private double totalScore; // total of level 3
- 
-    public void updateTotalScore() {
-        this.totalScore = this.problemSolving + this.analyticalSkills + this.logicalFlow;
-    }
+    private double involved;
+    private double teamPlayer;
+    private double willingToCreate;
+    private double tenacity;
+    private double valueSystem;
+
+    private boolean isSelected = false;
 }

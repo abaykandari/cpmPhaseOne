@@ -71,9 +71,16 @@ public class TalentService {
         newTalent.setDob(candidate.getDOB());
         newTalent.setCgpaUndergrad(candidate.getCgpaUndergrad());
         newTalent.setCgpaMasters(candidate.getCgpaMasters());
+        newTalent.setEkYear(candidate.getEkYear());
         talentRepository.save(newTalent);
         
         performanceService.addPerformanceWithTalent(newTalent, authenticatedUser);
+    }
+
+    public void addTalentList(List<Candidate> candidateList, String authenticatedUser) {
+        for (Candidate candidate : candidateList) {
+            addTalentFromCandidate(candidate, authenticatedUser);
+        }
     }
 
     public Talent createTalent(Talent talent) {
@@ -172,5 +179,6 @@ public class TalentService {
                 talentLeftForHealthReasons, talentLeftForPerformanceIssues, talentLeftForOthers);
         return result;
     }
+
 
 }

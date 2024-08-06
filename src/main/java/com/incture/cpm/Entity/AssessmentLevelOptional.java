@@ -16,24 +16,16 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 
-public class AssessmentLevelFour {
+public class AssessmentLevelOptional {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long levelFourId;
+    private Long levelOptionalId;
 
     @Column(unique = true, nullable = false)
     private String email;
     private String candidateName;
     
-    private double involved;
-    private double teamPlayer;
-    private double willingToCreate;
-    private double tenacity;
-    private double valueSystem;
+    private double customScore; 
 
-    private double totalScore; // total of level 4
-
-    public void updateTotalScore() {
-        this.totalScore = this.involved + this.teamPlayer + this.willingToCreate + this.tenacity + this.valueSystem;
-    }
+    private boolean isSelected = false;
 }

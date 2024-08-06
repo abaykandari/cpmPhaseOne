@@ -1,6 +1,5 @@
 package com.incture.cpm.Entity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -59,9 +58,15 @@ public class CollegeTPO {
     //    @JoinColumn(name = "candidateId")
     //    private List<Candidate> candidates;
 
-    //@JsonIgnore
-    @OneToMany(mappedBy = "college", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Assessment> assessmentList = new ArrayList<>();
+    @JsonIgnore
+    @OneToMany(mappedBy = "college", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Assessment> assessment;    
 
-    private String assessmentStatus = "Not Started"; //Started , Not Started, Completed
+/*     @PrePersist
+    public void initializeAssessment() {
+        if (this.assessment == null) {
+            this.assessment = new Assessment();
+            this.assessment.setCollege(this);
+        }
+    } */
 }

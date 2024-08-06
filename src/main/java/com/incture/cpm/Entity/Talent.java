@@ -2,6 +2,7 @@ package com.incture.cpm.Entity;
 
 import java.sql.Blob;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,6 +26,8 @@ public class Talent {
     private String collegeName;
     private String talentName;
     private String department;
+    
+    @Column(nullable = false, unique = true)
     private String email;
     private String phoneNumber;
     private String alternateNumber;

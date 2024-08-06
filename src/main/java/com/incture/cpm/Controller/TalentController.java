@@ -99,6 +99,7 @@ public class TalentController {
     }
 
     @PutMapping("/updatetalent/{talentId}")
+    @Transactional
     public ResponseEntity<Talent> updateTalent(@RequestBody Talent talent, @PathVariable Long talentId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Talent updatedTalent = talentService.updateTalent(talent, talentId);
@@ -111,6 +112,7 @@ public class TalentController {
     }
 
     @DeleteMapping("/deletetalent/{talentId}")
+    @Transactional
     public ResponseEntity<Void> deleteTalent(@PathVariable Long talentId) {
         boolean check = talentService.deleteTalent(talentId);
         if (check) {

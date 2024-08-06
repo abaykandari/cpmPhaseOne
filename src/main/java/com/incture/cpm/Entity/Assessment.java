@@ -1,18 +1,19 @@
 package com.incture.cpm.Entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.time.Year;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,50 +30,35 @@ public class Assessment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long assessmentId;
 
-    @Column(unique = true, nullable = false)
-    private String email;
-    private String candidateName;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "assessment_id")
+    private List<AssessmentLevelOne> levelOneList = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "levelOneId", referencedColumnName = "levelOneId")
-    private AssessmentLevelOne assessmentLevelOne;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "assessment_id")
+    private List<AssessmentLevelTwo> levelTwoList = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "levelTwoId", referencedColumnName = "levelTwoId")
-    private AssessmentLevelTwo assessmentLevelTwo;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "assessment_id")
+    private List<AssessmentLevelThree> levelThreeList = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "levelThreeId", referencedColumnName = "levelThreeId")
-    private AssessmentLevelThree assessmentLevelThree;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "assessment_id")
+    private List<AssessmentLevelOptional> levelOptionalList = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "levelFourId", referencedColumnName = "levelFourId")
-    private AssessmentLevelFour assessmentLevelFour;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "levelFiveId", referencedColumnName = "levelFiveId")
-    private AssessmentLevelFive assessmentLevelFive;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "assessment_id")
+    private List<AssessmentLevelFinal> levelFinalList = new ArrayList<>();
     
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "levelFinalId", referencedColumnName = "levelFinalId")
-    private AssessmentLevelFinal assessmentLevelFinal;
+    private Boolean isLevelOneCompleted = false; // once complete, lock the level for further incoming data
+    private Boolean isLevelTwoCompleted = false;
+    private Boolean isLevelThreeCompleted = false;
+    private Boolean isLevelOptionalCompleted = false;
 
-    @JsonIgnore
+    private String ekYear = String.valueOf(Year.now().getValue()); 
+    
+    @JsonIgnoreProperties({"tpoName", "primaryEmail", "phoneNumber", "addressLine1", "addressLine2", "location", "region", "collegeOwner", "primaryContact", "secondaryContact", "tier", "pinCode", "state", "compensation"})
     @ManyToOne
-    @JoinColumn(name="college_id")
+    @JoinColumn(name = "collegeId", referencedColumnName = "collegeId")
     private CollegeTPO college;
-
-    private double totalScore;
-
-    @PrePersist
-    @PreUpdate
-    public void updateTotalScore() {
-        this.totalScore = (assessmentLevelOne != null ? assessmentLevelOne.getTotalScore() : 0)
-                + (assessmentLevelTwo != null ? assessmentLevelTwo.getTotalScore() : 0)
-                + (assessmentLevelThree != null ? assessmentLevelThree.getTotalScore() : 0)
-                + (assessmentLevelFour != null ? assessmentLevelFour.getTotalScore() : 0)
-                + (assessmentLevelFive != null ? assessmentLevelFive.getHrScore() : 0);
-    }
 }
-
-// totalScore does't calculate the total score properly

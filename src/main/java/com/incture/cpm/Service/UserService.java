@@ -76,6 +76,7 @@ public class UserService {
             newUser.setInctureId(inctureId);
             newUser.setTalentName(talentName);
             newUser.setStatus("Pending");
+            unauthorizedUserRepo.save(newUser);
 
             History history = new History();
             history.setEntityId(newUser.getId().toString());
@@ -85,21 +86,17 @@ public class UserService {
             history.setUserName(email);
 
             newUser.getAuthenticationHistory().add(history);
-            unauthorizedUserRepo.save(newUser);
-
             return "UnauthorizedUser";
         }
     }
 
     public void printUserRoles(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         System.out.println("Roles for user " + email + ": " + user.getRoles());
     }
 
     public User findByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 
     public void deleteUser(Long id) {
@@ -112,8 +109,7 @@ public class UserService {
     }
 
     public void addRole(String email, String newRole) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         user.getRoles().add(newRole);
         userRepository.save(user);
     }

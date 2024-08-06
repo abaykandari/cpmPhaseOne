@@ -30,9 +30,6 @@ public class AssessmentLevelOne {
     private double logicalScore;
     private double verbalScore;
     private double codingScore;
-    private double totalScore; // total of level 1
 
-    public void updateTotalScore() {
-        this.totalScore = this.quantitativeScore + this.logicalScore + this.verbalScore + this.codingScore;
-    }
+    private boolean isSelected = false;
 }

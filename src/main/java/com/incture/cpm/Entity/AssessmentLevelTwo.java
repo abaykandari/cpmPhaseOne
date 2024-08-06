@@ -29,22 +29,12 @@ public class AssessmentLevelTwo {
     private double problemStatement; 
     private double processWorkflow;
     private double useOfAlgorithms;
-    private double contentTotal; // total of the above four scores
 
     private double techStacks;
     private double recommendedSolution;
-    private double relevanceTotal; // total of the above two scores
 
     private double languageAndGrammar;
     private double logicalFlow;
-    private double presentationTotal; // total of the above two scores
 
-    private double totalScore; // total of level 2
-
-    public void updateTotalScore() {
-        this.contentTotal = this.problemStatement + this.processWorkflow + this.useOfAlgorithms;
-        this.relevanceTotal = this.techStacks + this.recommendedSolution;
-        this.presentationTotal = this.languageAndGrammar + this.logicalFlow;
-        this.totalScore = this.contentTotal + this.relevanceTotal + this.presentationTotal;
-    }
+    private boolean isSelected = false;
 }

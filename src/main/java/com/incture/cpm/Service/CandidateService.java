@@ -16,7 +16,6 @@ import com.incture.cpm.Util.ExcelUtil;
 
 import java.io.IOException;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,49 +49,68 @@ public class CandidateService {
     public void deleteCandidate(Long id) {
         candidateRepository.deleteById(id);
     }
+
+    private double parseDoubleOrDefault(String value, double defaultValue) {
+        if (value == null || value.trim().isEmpty() || value.equals("-")) {
+            return defaultValue;
+        }
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            // Log the exception if needed
+            System.err.println("Invalid double value: " + value);
+            return defaultValue;
+        }
+    }
  
     @Transactional
-public void feedCandidateData(MultipartFile file, int collegeId) throws NotFoundException {
-    try {
-        List<Map<String, String>> dataList = excelUtil.readExcelFile(file);
+    public void feedCandidateData(MultipartFile file, int collegeId) throws NotFoundException {
+        try {
+            List<Map<String, String>> dataList = excelUtil.readExcelFile(file);
 
-        for (Map<String, String> data : dataList) {
-            Optional<CollegeTPO> clg = collegeRepository.findById(collegeId);
-            if (clg.isEmpty()) throw new NotFoundException();
+            for (Map<String, String> data : dataList) {
+                Optional<CollegeTPO> clg = collegeRepository.findById(collegeId);
+                if (clg.isEmpty()) throw new NotFoundException();
 
-            String email = Optional.ofNullable(data.get("Email Id")).orElse("");
-            Optional<Candidate> existingCandidate = candidateRepository.findByEmail(email);
-            if (existingCandidate.isPresent()) {
-                // Skip duplicate entry
-                continue;
+                String email = Optional.ofNullable(data.get("Email Id")).orElse("");
+                Optional<Candidate> existingCandidate = candidateRepository.findByEmail(email);
+                if (existingCandidate.isPresent()) {
+                    // Skip duplicate entry
+                    continue;
+                }
+
+                Candidate cand = new Candidate();
+                cand.setCandidateName(Optional.ofNullable(data.get("Student Name")).orElse(""));
+                cand.setEmail(email);
+
+                // Handling percentage fields
+                cand.setTenthPercent(parseDoubleOrDefault(data.get("10th %"), 0.0));
+                cand.setTwelthPercent(parseDoubleOrDefault(data.get("12th %"), 0.0));
+
+                cand.setFatherName(Optional.ofNullable(data.get("Father Name")).orElse(""));
+                cand.setPermanentAddress(Optional.ofNullable(data.get("address")).orElse(""));
+                cand.setMotherName(Optional.ofNullable(data.get("Mother Name")).orElse(""));
+
+                // Handling CGPA fields
+                cand.setCgpaUndergrad(parseDoubleOrDefault(data.get("UG - CGPA"), 0.0));
+                cand.setCgpaMasters(parseDoubleOrDefault(data.get("PG"), 0.0));
+
+                cand.setPhoneNumber(Optional.ofNullable(data.get("Contact No")).orElse(""));
+                cand.setCurrentLocation(Optional.ofNullable(data.get("Current Location")).orElse(""));
+                cand.setAadhaarNumber(Optional.ofNullable(data.get("Aadhar No (Mandate)")).orElse(""));
+                cand.setDOB(Optional.ofNullable(data.get("Dob")).orElse(""));
+                cand.setDepartment(Optional.ofNullable(data.get("Branch")).orElse(""));
+                cand.setPanNumber(Optional.ofNullable(data.get("Pan No (optional)")).orElse(""));
+                cand.setAlternateNumber(Optional.ofNullable(data.get("Alternate Number")).orElse(""));
+                cand.setCollegeId(collegeId);
+                cand.setStatus("Interview Pending");
+                cand.setEkYear(String.valueOf(Year.now().getValue()));
+                cand.setCandidateCollege(clg.get().getCollegeName());
+                candidateRepository.save(cand);
             }
-
-            Candidate cand = new Candidate();
-            cand.setCandidateName(Optional.ofNullable(data.get("Student Name")).orElse(""));
-            cand.setEmail(email);
-            cand.setTenthPercent(Optional.ofNullable(data.get("10th %")).map(Double::parseDouble).orElse(0.0));
-            cand.setTwelthPercent(Optional.ofNullable(data.get("12th %")).map(Double::parseDouble).orElse(0.0));
-            cand.setFatherName(Optional.ofNullable(data.get("Father Name")).orElse(""));
-            cand.setPermanentAddress(Optional.ofNullable(data.get("address")).orElse(""));
-            cand.setMotherName(Optional.ofNullable(data.get("Mother Name")).orElse(""));
-            cand.setCgpaUndergrad(Optional.ofNullable(data.get("UG - CGPA")).map(Double::parseDouble).orElse(0.0));
-            cand.setCgpaMasters(Optional.ofNullable(data.get("PG")).map(Double::parseDouble).orElse(0.0));
-            cand.setPhoneNumber(Optional.ofNullable(data.get("Contact No")).orElse(""));
-            cand.setCurrentLocation(Optional.ofNullable(data.get("Current Location")).orElse(""));
-            cand.setAadhaarNumber(Optional.ofNullable(data.get("Aadhar No (Mandate)")).orElse(""));
-            cand.setDOB(Optional.ofNullable(data.get("Dob")).orElse(""));
-            cand.setDepartment(Optional.ofNullable(data.get("Branch")).orElse(""));
-            cand.setPanNumber(Optional.ofNullable(data.get("Pan No (optional)")).orElse(""));
-            cand.setAlternateNumber(Optional.ofNullable(data.get("Alternate Number")).orElse(""));
-            cand.setCollegeId(collegeId);
-            cand.setStatus("Interview Pending");
-            cand.setEkYear(String.valueOf(Year.now().getValue()));
-            cand.setCandidateCollege(clg.get().getCollegeName());
-            candidateRepository.save(cand);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to parse Excel file: " + e.getMessage());
         }
-    } catch (IOException e) {
-        throw new RuntimeException("Failed to parse Excel file: " + e.getMessage());
     }
-}
 
 }
