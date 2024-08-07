@@ -68,16 +68,16 @@ public class AssessmentController {
         try {
             if (level == null)  return new ResponseEntity<>(assessmentService.getAssessmentById(assessmentId), HttpStatus.OK);
             
-            switch (level) {
-                case "levelOne":
+            switch (level.toLowerCase()) {
+                case "levelone":
                     return new ResponseEntity<>(assessmentService.getAssessmentLevelOneById(assessmentId), HttpStatus.OK);
-                case "levelTwo":
+                case "leveltwo":
                     return new ResponseEntity<>(assessmentService.getAssessmentLevelTwoById(assessmentId), HttpStatus.OK);
-                case "levelThree":
+                case "levelthree":
                     return new ResponseEntity<>(assessmentService.getAssessmentLevelThreeById(assessmentId), HttpStatus.OK);
-                case "levelOptional":
+                case "leveloptional":
                     return new ResponseEntity<>(assessmentService.getAssessmentLevelOptionalById(assessmentId), HttpStatus.OK);
-                case "levelFinal":
+                case "levelfinal":
                     return new ResponseEntity<>(assessmentService.getAssessmentLevelFinalById(assessmentId), HttpStatus.OK);
                 default:
                     return new ResponseEntity<>("Invalid level specified", HttpStatus.BAD_REQUEST);
@@ -100,7 +100,7 @@ public class AssessmentController {
         }
     }
 
-    @PostMapping("/uploadLevelExcel")
+    @PutMapping("/uploadLevelExcel")
     public ResponseEntity<String> uploadExcel(@RequestParam("file") MultipartFile file, @RequestParam long assessmentId, @RequestParam String level) {
         try {
             switch (level.toLowerCase()) {
@@ -164,7 +164,7 @@ public class AssessmentController {
         }
     }
     
-    @PostMapping("/selectCandidates")
+    @PutMapping("/selectCandidates")
     public ResponseEntity<String> selectCandidates(@RequestParam String level, @RequestParam long assessmentId, @RequestPart List<Object> selectionList) {
         try {
             switch (level.toLowerCase()) {
@@ -198,7 +198,7 @@ public class AssessmentController {
     }
 
     @Operation(summary = "Mark Assessment Level as Complete", description = "Mark a specified level of an assessment as complete.")
-    @PostMapping("/markLevelAsComplete")
+    @PutMapping("/markLevelAsComplete")
     public ResponseEntity<String> markLevelAsComplete(@RequestParam String level, @RequestParam long assessmentId) {
         try {
             switch (level) {
@@ -225,7 +225,7 @@ public class AssessmentController {
         }
     }
 
-    @PostMapping("/skipOptionalLevel")
+    @PutMapping("/skipOptionalLevel")
     public ResponseEntity<String> skipOptionalLevel(@RequestParam long assessmentId){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         try{

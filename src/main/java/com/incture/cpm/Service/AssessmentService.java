@@ -19,6 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.incture.cpm.Dto.AssessmentProjection;
+import com.incture.cpm.Dto.AssessmentLevelOneResponse;
+import com.incture.cpm.Dto.AssessmentLevelOptionalResponse;
+import com.incture.cpm.Dto.AssessmentLevelThreeResponse;
+import com.incture.cpm.Dto.AssessmentLevelTwoResponse;
 import com.incture.cpm.Entity.Assessment;
 import com.incture.cpm.Entity.AssessmentLevelOptional;
 import com.incture.cpm.Entity.AssessmentLevelOne;
@@ -69,20 +73,24 @@ public class AssessmentService {
         return assessmentRepo.findById(assessmentId).orElseThrow(() -> new IllegalStateException("Assessment not found for id: " + assessmentId));
     }
 
-    public List<AssessmentLevelOne> getAssessmentLevelOneById(long assessmentId) {
-        return getAssessmentById(assessmentId).getLevelOneList();
+    public AssessmentLevelOneResponse getAssessmentLevelOneById(long assessmentId) {
+        Assessment assessment = assessmentRepo.findById(assessmentId).orElseThrow(() -> new IllegalStateException("Assessment not found for id: " + assessmentId));
+        return new AssessmentLevelOneResponse(assessment.getIsLevelOneCompleted(), assessment.getLevelOneList());
     }
 
-    public List<AssessmentLevelTwo> getAssessmentLevelTwoById(long assessmentId) {
-        return getAssessmentById(assessmentId).getLevelTwoList();
+    public AssessmentLevelTwoResponse getAssessmentLevelTwoById(long assessmentId) {
+        Assessment assessment = assessmentRepo.findById(assessmentId).orElseThrow(() -> new IllegalStateException("Assessment not found for id: " + assessmentId));
+        return new AssessmentLevelTwoResponse(assessment.getIsLevelTwoCompleted(), assessment.getLevelTwoList());
     }
 
-    public List<AssessmentLevelThree> getAssessmentLevelThreeById(long assessmentId) {
-        return getAssessmentById(assessmentId).getLevelThreeList();
+    public AssessmentLevelThreeResponse getAssessmentLevelThreeById(long assessmentId) {
+        Assessment assessment = assessmentRepo.findById(assessmentId).orElseThrow(() -> new IllegalStateException("Assessment not found for id: " + assessmentId));
+        return new AssessmentLevelThreeResponse(assessment.getIsLevelThreeCompleted(), assessment.getLevelThreeList());
     }
 
-    public List<AssessmentLevelOptional> getAssessmentLevelOptionalById(long assessmentId) {
-        return getAssessmentById(assessmentId).getLevelOptionalList();
+    public AssessmentLevelOptionalResponse getAssessmentLevelOptionalById(long assessmentId) {
+        Assessment assessment = assessmentRepo.findById(assessmentId).orElseThrow(() -> new IllegalStateException("Assessment not found for id: " + assessmentId));
+        return new AssessmentLevelOptionalResponse(assessment.getIsLevelOptionalCompleted(), assessment.getLevelOptionalList());
     }
 
     public List<AssessmentLevelFinal> getAssessmentLevelFinalById(long assessmentId) {
@@ -204,36 +212,52 @@ public class AssessmentService {
         Assessment assessment = assessmentRepo.findById(assessmentId).orElseThrow(() -> new IllegalArgumentException("Could not find assessment for assessment id: " + assessmentId));
         if (assessment.getIsLevelOneCompleted())    throw new IllegalStateException("Level One assessments are already completed and locked for further updates.");
         
-        boolean isPresent = assessment.getLevelOneList().stream().anyMatch(levelOne -> levelOne.getLevelOneId().equals(updatedLevelOne.getLevelOneId()));
-        if(isPresent)    levelOneRepo.save(updatedLevelOne);
-        else    throw new IllegalArgumentException("The provided Level One assessment does not exist in the list.");
+        AssessmentLevelOne levelOne = assessment.getLevelOneList().stream().filter(l -> l.getEmail().equals(updatedLevelOne.getEmail())).findFirst().orElseThrow(() -> new IllegalArgumentException("Could not find level one assessment for email: " + updatedLevelOne.getEmail()));
+        levelOne.setLogicalScore(updatedLevelOne.getLogicalScore());
+        levelOne.setQuantitativeScore(updatedLevelOne.getQuantitativeScore());
+        levelOne.setVerbalScore(updatedLevelOne.getVerbalScore());
+        levelOne.setCodingScore(updatedLevelOne.getCodingScore());
+        levelOneRepo.save(levelOne);
     }
 
     public void updateLevel(AssessmentLevelTwo updatedLevelTwo, long assessmentId) {
         Assessment assessment = assessmentRepo.findById(assessmentId).orElseThrow(() -> new IllegalArgumentException("Could not find assessment for assessment id: " + assessmentId));
         if (assessment.getIsLevelTwoCompleted()) throw new IllegalStateException("Level Two assessments are already completed and locked for further updates.");
         
-        boolean isPresent = assessment.getLevelTwoList().stream().anyMatch(levelTwo -> levelTwo.getLevelTwoId().equals(updatedLevelTwo.getLevelTwoId()));
-        if(isPresent)    levelTwoRepo.save(updatedLevelTwo);
-        else    throw new IllegalArgumentException("The provided Level Two assessment does not exist in the list.");
+        AssessmentLevelTwo levelTwo = assessment.getLevelTwoList().stream().filter(l -> l.getEmail().equals(updatedLevelTwo.getEmail())).findFirst().orElseThrow(() -> new IllegalArgumentException("Could not find level two assessment for email: " + updatedLevelTwo.getEmail()));
+        levelTwo.setProblemStatement(updatedLevelTwo.getProblemStatement());
+        levelTwo.setProcessWorkflow(updatedLevelTwo.getProcessWorkflow());
+        levelTwo.setUseOfAlgorithms(updatedLevelTwo.getUseOfAlgorithms());
+        levelTwo.setTechStacks(updatedLevelTwo.getTechStacks());
+        levelTwo.setRecommendedSolution(updatedLevelTwo.getRecommendedSolution());
+        levelTwo.setLanguageAndGrammar(updatedLevelTwo.getLanguageAndGrammar());
+        levelTwo.setLogicalFlow(updatedLevelTwo.getLogicalFlow());
+        levelTwoRepo.save(levelTwo);
     }
 
     public void updateLevel(AssessmentLevelThree updatedLevelThree, long assessmentId) {
         Assessment assessment = assessmentRepo.findById(assessmentId).orElseThrow(() -> new IllegalArgumentException("Could not find assessment for assessment id: " + assessmentId));
         if (assessment.getIsLevelThreeCompleted()) throw new IllegalStateException("Level Three assessments are already completed and locked for further updates.");
         
-        boolean isPresent = assessment.getLevelThreeList().stream().anyMatch(levelThree -> levelThree.getLevelThreeId().equals(updatedLevelThree.getLevelThreeId()));
-        if(isPresent)    levelThreeRepo.save(updatedLevelThree);
-        else    throw new IllegalArgumentException("The provided Level Three assessment does not exist in the list.");
+        AssessmentLevelThree levelThree = assessment.getLevelThreeList().stream().filter(l -> l.getEmail().equals(updatedLevelThree.getEmail())).findFirst().orElseThrow(() -> new IllegalArgumentException("Could not find level three assessment for email: " + updatedLevelThree.getEmail()));
+        levelThree.setProblemSolving(updatedLevelThree.getProblemSolving());
+        levelThree.setAnalyticalSkills(updatedLevelThree.getAnalyticalSkills());
+        levelThree.setLogicalFlow(updatedLevelThree.getLogicalFlow());
+        levelThree.setInvolved(updatedLevelThree.getInvolved());
+        levelThree.setTeamPlayer(updatedLevelThree.getTeamPlayer());
+        levelThree.setWillingToCreate(updatedLevelThree.getWillingToCreate());
+        levelThree.setTenacity(updatedLevelThree.getTenacity());
+        levelThree.setValueSystem(updatedLevelThree.getValueSystem());
+        levelThreeRepo.save(levelThree);
     }
 
     public void updateLevel(AssessmentLevelOptional updatedLevelOptional, long assessmentId) {
         Assessment assessment = assessmentRepo.findById(assessmentId).orElseThrow(() -> new IllegalArgumentException("Could not find assessment for assessment id: " + assessmentId));
         if (assessment.getIsLevelOptionalCompleted()) throw new IllegalStateException("Level Optional assessments are already completed and locked for further updates.");
         
-        boolean isPresent = assessment.getLevelOptionalList().stream().anyMatch(levelOptional -> levelOptional.getLevelOptionalId().equals(updatedLevelOptional.getLevelOptionalId()));
-        if(isPresent)    levelOptionalRepo.save(updatedLevelOptional);
-        else    throw new IllegalArgumentException("The provided Level Optional assessment does not exist in the list.");
+        AssessmentLevelOptional levelOptional = assessment.getLevelOptionalList().stream().filter(l -> l.getEmail().equals(updatedLevelOptional.getEmail())).findFirst().orElseThrow(() -> new IllegalArgumentException("Could not find level optional assessment for email: " + updatedLevelOptional.getEmail()));
+        levelOptional.setCustomScore(updatedLevelOptional.getCustomScore());
+        levelOptionalRepo.save(updatedLevelOptional);
     }
 
     public void selectLevelOneCandidates(List<AssessmentLevelOne> levelOneSelectionList, long assessmentId) {
