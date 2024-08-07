@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.incture.cpm.Entity.Attendance;
@@ -64,7 +65,8 @@ public class PerformanceService {
 
     public void addPerformanceWithTalent(Talent talent, String authenticatedUser) {
         Optional<Performance> existingPerformance = performanceRepo.findByTalentId(talent.getTalentId());
-        if(existingPerformance.isPresent()) return;
+        if (existingPerformance.isPresent())
+            return;
         Performance performance = new Performance();
 
         performance.setTalentId(talent.getTalentId());
@@ -83,7 +85,7 @@ public class PerformanceService {
         performanceRepo.save(performance);
     }
 
-    //used by talent when updating talent details
+    // used by talent when updating talent details
     public String editTalentDetails(Talent talent, String authenticatedUser) {
         Performance existingPerformance = performanceRepo.findByTalentId(talent.getTalentId())
                 .orElseThrow(() -> new IllegalStateException("Performance not found for given talent"));
@@ -154,7 +156,10 @@ public class PerformanceService {
             double sum = 0.0;
             int n = 0;
             for (TalentAssessment talentAssessment : talentAssessmentList) {
-                sum += Collections.max(talentAssessment.getScores());
+                String scoreJsonData = talentAssessment.getScores();
+                List<Double> marks = objectMapper.readValue(scoreJsonData, new TypeReference<List<Double>>() {
+                });
+                sum += Collections.max(marks);
                 n += 1;
             }
             Performance performance = performanceRepo.findByTalentId(talentId).get();
@@ -210,9 +215,9 @@ public class PerformanceService {
 
     @Transactional
     @Scheduled(cron = "0 0 0 L * ?") // month end schedule
-    //@Scheduled(fixedDelay = 120000) // 120000 milliseconds = 2 minutes
+    // @Scheduled(fixedDelay = 120000) // 120000 milliseconds = 2 minutes
     public void saveFeedbackAndResetPerformance() {
-        System.out.println("Scheduled task started");   
+        System.out.println("Scheduled task started");
         List<Performance> performances = performanceRepo.findAll();
 
         for (Performance performance : performances) {
@@ -248,15 +253,16 @@ public class PerformanceService {
 
     @Transactional
     @Scheduled(cron = "0 0 0 L * ?") // month end scheldule
-    //@Scheduled(fixedDelay = 120000) // 120000 milliseconds = 2 minutes
+    // @Scheduled(fixedDelay = 120000) // 120000 milliseconds = 2 minutes
     public void sendMonthlyEmails() {
         List<User> reportingManagers = userRepository.findByRole("Reporting Manager");
         for (User user : reportingManagers) {
             String email = user.getEmail();
             String subject = "Monthly Performance Report Reminder";
-            String text = "Dear " + user.getTalentName() + ",\n\nPlease ensure that all monthly reports are completed.\n\nBest regards,\nIncture";
+            String text = "Dear " + user.getTalentName()
+                    + ",\n\nPlease ensure that all monthly reports are completed.\n\nBest regards,\nIncture";
             emailService.sendSimpleEmail(email, subject, text);
         }
     }
-    
+
 }

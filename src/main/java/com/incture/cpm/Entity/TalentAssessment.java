@@ -28,7 +28,9 @@ public class TalentAssessment {
     private String assessmentType;
     private String assessmentSkill;
     private String location;
-    private List<Double> scores;
+
+    @Column(columnDefinition = "TEXT")
+    private String scores;
     private int attempts;
     @Column(columnDefinition = "TEXT")
     private String comments;

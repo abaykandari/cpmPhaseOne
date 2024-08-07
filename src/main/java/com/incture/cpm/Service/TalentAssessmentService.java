@@ -1,6 +1,8 @@
 package com.incture.cpm.Service;
 
 import com.incture.cpm.Entity.TalentAssessment;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.incture.cpm.Dto.TalentAssessmentDto;
 import com.incture.cpm.Entity.Talent;
 import com.incture.cpm.Repo.TalentAssessmentRepository;
@@ -38,6 +40,9 @@ public class TalentAssessmentService {
     @Autowired
     private PerformanceService performanceService;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     // isse page par sab talents ki info display hogi
     public List<Talent> getAllTalentsForAssessment() {
         return talentService.getAllTalents();
@@ -66,23 +71,31 @@ public class TalentAssessmentService {
     }
 
     public TalentAssessment updateTalentAssessment(Long assessmentId, Long talentId, double score, String reason) {
-        Optional<TalentAssessment> assessment = assessmentRepository.findByAssessmentIdAndTalentId(assessmentId,
-                talentId);
+        try {
+            Optional<TalentAssessment> assessment = assessmentRepository.findByAssessmentIdAndTalentId(assessmentId,
+                    talentId);
 
-        if (assessment.isPresent()) {
-            TalentAssessment talentAssessment = assessment.get();
-            List<Double> marks = talentAssessment.getScores();
-            int size = marks.size();
-            marks.set(size - 1, score);
-            talentAssessment.setScores(marks);
+            if (assessment.isPresent()) {
+                TalentAssessment talentAssessment = assessment.get();
+                String scoreJsonData = talentAssessment.getScores();
+                List<Double> marks = objectMapper.readValue(scoreJsonData, new TypeReference<List<Double>>() {
+                });
 
-            LocalDateTime now = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            String formattedDateTime = now.format(formatter);
-            talentAssessment.setComments(
-                    formattedDateTime + ": Assessment Score Updated Manually= " + score + "(" + reason + ")" + "\n"
-                            + talentAssessment.getComments());
-            return assessmentRepository.save(talentAssessment);
+                int size = marks.size();
+                marks.set(size - 1, score);
+                scoreJsonData = objectMapper.writeValueAsString(marks);
+                talentAssessment.setScores(scoreJsonData);
+
+                LocalDateTime now = LocalDateTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                String formattedDateTime = now.format(formatter);
+                talentAssessment.setComments(
+                        formattedDateTime + ": Assessment Score Updated Manually= " + score + "(" + reason + ")" + "\n"
+                                + talentAssessment.getComments());
+                return assessmentRepository.save(talentAssessment);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -135,12 +148,20 @@ public class TalentAssessmentService {
             talentAssessment.setAssessmentDate(assessment.getAssessmentDate());
             if (assessmentRepoFetch.isPresent()) {
                 TalentAssessment existingAssessment = assessmentRepoFetch.get();
-
                 talentAssessment.setLocalKey(existingAssessment.getLocalKey());
                 talentAssessment.setAttempts(existingAssessment.getAttempts() + 1);
-                List<Double> marks = existingAssessment.getScores();
+
+                // Retreiving String JSON data from database
+                String scoreJsonData = existingAssessment.getScores();
+                // converting the string into List<Double>
+                List<Double> marks = objectMapper.readValue(scoreJsonData, new TypeReference<List<Double>>() {
+                });
+                // adding the latest attempt Scores in the list
                 marks.add(assessment.getScore());
-                talentAssessment.setScores(marks);
+                // again converting into JSON String
+                scoreJsonData = objectMapper.writeValueAsString(marks);
+                // setting the score
+                talentAssessment.setScores(scoreJsonData);
 
                 // Setting the Logs of Assessment Updates
                 LocalDateTime now = LocalDateTime.now();
@@ -156,7 +177,8 @@ public class TalentAssessmentService {
                 talentAssessment.setAttempts(1);
                 List<Double> mark = new ArrayList<>();
                 mark.add(assessment.getScore());
-                talentAssessment.setScores(mark);
+                String scoreJsonData = objectMapper.writeValueAsString(mark);
+                talentAssessment.setScores(scoreJsonData);
 
                 // Setting the Logs of Assessment Creation
                 LocalDateTime now = LocalDateTime.now();
