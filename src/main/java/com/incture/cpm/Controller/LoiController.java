@@ -2,6 +2,8 @@ package com.incture.cpm.Controller;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.sql.rowset.serial.SerialException;
 
@@ -11,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 import com.incture.cpm.Entity.AssessmentLevelFinal;
 import com.incture.cpm.Repo.AssessmentLevelFinalRepository;
 import com.incture.cpm.Service.LoiService;
@@ -30,6 +35,7 @@ import java.sql.SQLException;
 
 @RestController
 @RequestMapping("/api/loi")
+@CrossOrigin("*")
 public class LoiController {
 
     @Autowired
@@ -54,10 +60,43 @@ public class LoiController {
         }
     }
 
+    // @PostMapping("/sendLOI")
+    // public ResponseEntity<String> sendLOI(@RequestBody List<Long> candidateIds) {
+    // String result = loiService.sendLetterOfIntent(candidateIds);
+    // return new ResponseEntity<>(result, HttpStatus.OK);
+    // }
+
+    // @PostMapping("/sendLOI")
+    // public CompletableFuture<ResponseEntity<String>>
+    // sendLetterOfIntent(@RequestBody List<Long> candidateIds) {
+    // return loiService.sendLetterOfIntent(candidateIds)
+    // .thenApply(ResponseEntity::ok);
+    // }
+    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+
     @PostMapping("/sendLOI")
-    public ResponseEntity<String> sendLOI(@RequestBody List<Long> candidateIds) {
-        String result = loiService.sendLetterOfIntent(candidateIds);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+    public ResponseEntity<String> sendLetterOfIntent(@RequestBody List<Long> candidateIds) {
+        CompletableFuture.runAsync(() -> {
+            String result = loiService.sendLetterOfIntent(candidateIds).join();
+            emitters.forEach(emitter -> {
+                try {
+                    emitter.send(SseEmitter.event().name("completion").data(result));
+                } catch (IOException e) {
+                    emitter.completeWithError(e);
+                }
+            });
+        });
+
+        return ResponseEntity.accepted().body("Letter of Intent sending process has started.");
+    }
+
+    @GetMapping("/status")
+    public SseEmitter streamStatus() {
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        emitters.add(emitter);
+        emitter.onCompletion(() -> emitters.remove(emitter));
+        emitter.onTimeout(() -> emitters.remove(emitter));
+        return emitter;
     }
 
     @GetMapping("/viewloi/{candidateId}")
