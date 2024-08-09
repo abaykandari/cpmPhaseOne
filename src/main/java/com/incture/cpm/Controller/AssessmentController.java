@@ -201,7 +201,7 @@ public class AssessmentController {
     @PutMapping("/markLevelAsComplete")
     public ResponseEntity<String> markLevelAsComplete(@RequestParam String level, @RequestParam long assessmentId) {
         try {
-            switch (level) {
+            switch (level.toLowerCase()) {
                 case "levelone":
                     assessmentService.markLevelOneAsComplete(assessmentId);
                     break;
@@ -214,6 +214,7 @@ public class AssessmentController {
                 case "leveloptional":
                     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                     assessmentService.markLevelOptionalAsComplete(assessmentId, authentication.getName());
+                    break;
                 default:
                     return new ResponseEntity<>("Invalid level specified", HttpStatus.BAD_REQUEST);
             }

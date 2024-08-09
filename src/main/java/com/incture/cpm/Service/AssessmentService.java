@@ -283,6 +283,8 @@ public class AssessmentService {
             AssessmentLevelTwo levelTwo = levelTwoMap.get(levelTwoSelection.getEmail());
             if(levelTwo != null)    levelTwo.setSelected(true);
         }
+        
+        assessmentRepo.save(assessment);
     }
 
     public void selectLevelThreeCandidates(List<AssessmentLevelThree> levelThreeSelectionList, long assessmentId) {
