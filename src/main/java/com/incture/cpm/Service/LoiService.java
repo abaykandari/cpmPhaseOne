@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import javax.sql.rowset.serial.SerialBlob;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -14,6 +15,8 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.incture.cpm.Entity.AssessmentLevelFinal;
@@ -29,6 +32,7 @@ import java.sql.Blob;
 import java.sql.SQLException;
 
 @Service
+@EnableAsync
 public class LoiService {
     @Autowired
     private JavaMailSender mailSender;
@@ -105,7 +109,9 @@ public class LoiService {
         return "Error Occurred while Generating Letter Of Intent";
     }
 
-    private boolean sendEmailWithAttachment(AssessmentLevelFinal to) throws MessagingException, SQLException {
+    @Async("asyncTaskExecutor")
+    public CompletableFuture<Boolean> sendEmailWithAttachment(AssessmentLevelFinal to)
+            throws MessagingException, SQLException {
         try {
             byte[] pdfBytes = to.getLoi().getBytes(1l, (int) to.getLoi().length());
             MimeMessage message = mailSender.createMimeMessage();
@@ -130,36 +136,38 @@ public class LoiService {
                     "9876543210");
             helper.addAttachment("LetterOfIntent.pdf", new ByteArrayResource(pdfBytes));
             mailSender.send(message);
-            return true;
+            return CompletableFuture.completedFuture(true);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+        return CompletableFuture.completedFuture(false);
     }
 
     @Transactional
-    public String sendLetterOfIntent(List<Long> candidateIds) {
+    @Async("asyncTaskExecutor")
+    public CompletableFuture<String> sendLetterOfIntent(List<Long> candidateIds) {
         long finalCount = 0;
         try {
             List<AssessmentLevelFinal> candidateList = assessmentLevelFinalRepository.findAllById(candidateIds);
             long initialCount = candidateList.size();
             for (AssessmentLevelFinal candidate : candidateList) {
 
-                boolean ans = sendEmailWithAttachment(candidate);
-                if (ans == true) {
+                CompletableFuture<Boolean> ans = sendEmailWithAttachment(candidate);
+                if (ans.get() == true) {
                     finalCount++;
-                    candidate.setLoiSent(ans);
+                    candidate.setLoiSent(ans.get());
                     assessmentLevelFinalRepository.save(candidate);
                 }
 
             }
             if (initialCount == finalCount) {
-                return "Letter of Intent Rolled Out Successfully";
+                return CompletableFuture.completedFuture("Letter of Intent Rolled Out Successfully");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return ("Error Occurred while Sending Mail\n" + "Mail sent to only " +
-                finalCount + " Candidates");
+        return CompletableFuture
+                .completedFuture("Error Occurred while Sending Mail\n" + "Mail sent to only " +
+                        finalCount + " Candidates");
     }
 }
